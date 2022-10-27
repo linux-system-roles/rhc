@@ -1,0 +1,75 @@
+---
+- name: Get LSR_RHC_TEST_DATA environment variable
+  set_fact:
+    lsr_rhc_test_data_file: "{{ lookup('env', 'LSR_RHC_TEST_DATA') }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Import test data
+  include_vars:
+    file: "{{ lsr_rhc_test_data_file }}"
+  when: lsr_rhc_test_data_file | length > 0
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Deploy Candlepin
+  block:
+    - name: Clone ansible-role-candlepin repo
+      git:
+        repo: https://github.com/candlepin/ansible-role-candlepin.git
+        version: master
+        dest: "{{ playbook_dir }}/roles/candlepin"
+      delegate_to: 127.0.0.1
+      become: false
+
+    - name: Install collection requirements of candlepin role
+      command:
+        argv:
+          - ansible-galaxy
+          - collection
+          - install
+          - "-r"
+          - "{{ playbook_dir }}/tasks/setup_candlepin_requirements.yml"
+      delegate_to: 127.0.0.1
+      become: false
+
+    - name: Create 'candlepin' user
+      user:
+        name: candlepin
+
+    - name: Create sudoers configuration
+      copy:
+        dest: /etc/sudoers.d/candlepin
+        content: "candlepin ALL=(ALL) NOPASSWD: ALL\n"
+        mode: 0440
+
+    - name: Run Candlepin install
+      block:
+        - name: Include candlepin role
+          include_role:
+            name: candlepin
+          vars:
+            cp_configure_mariadb: false
+            cp_configure_ruby: false
+            cp_deploy_args: "-g -a -f -t"
+
+    - name: Enable tomcat
+      service:
+        name: tomcat
+        enabled: true
+
+    - name: Set variables
+      set_fact:
+        lsr_rhc_test_data:
+          candlepin_host: 127.0.0.1
+          candlepin_port: 8443
+          candlepin_prefix: /candlepin
+          candlepin_insecure: true
+        cacheable: true
+  when: lsr_rhc_test_data_file | length == 0
+
+- name: Check Candlepin works
+  uri:
+    url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
+    method: HEAD
+    validate_certs: "{{ not lsr_rhc_test_data.candlepin_insecure }}"

@@ -1,0 +1,3 @@
+# this makes sure that this directory exists as empty in git;
+# in particular, fake an empty rvm.ruby role for the candlepin role,
+# as it declares that as a dependency and we disable its usage

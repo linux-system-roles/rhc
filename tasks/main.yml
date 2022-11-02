@@ -1,2 +1,4 @@
 # SPDX-License-Identifier: MIT
 ---
+- name: Set ansible_facts required by role
+  include_tasks: set_vars.yml

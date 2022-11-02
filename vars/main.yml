@@ -1,2 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
+
+# ansible_facts required by the role
+__rhc_required_facts:
+  - distribution
+  - distribution_major_version

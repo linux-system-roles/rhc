@@ -13,12 +13,19 @@ lsr_rhc_test_data:
   candlepin_port: port
   candlepin_prefix: /candlepin
   candlepin_insecure: 1
+  reg_username: "username"
+  reg_password: "password"
+  reg_organization: "organization"
 ```
 
 - `candlepin_host` & `candlepin_port` are the hostname & the port of Candlepin
 - `candlepin_prefix` is the path under which Candlepin listens to
 - `candlepin_insecure` specifies whether do not validate the Candlepin SSL
   certificate (needed usually in self-deployments)
+- `reg_username`, `reg_password` & `reg_organization` are the credentials
+  of the user to use in the vast majority of the registration tests;
+  `reg_organization` can be specified as `null` in case `reg_username` belongs
+  to only one organization
 
 To use this custom configuration, set the `LSR_RHC_TEST_DATA` environment
 variable to the full path of that file.

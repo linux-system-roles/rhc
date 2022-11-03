@@ -1,2 +1,6 @@
 # SPDX-License-Identifier: MIT
 ---
+rhc_auth: {}
+rhc_organization: null
+rhc_server: {}
+rhc_state: "present"

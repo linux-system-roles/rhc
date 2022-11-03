@@ -2,3 +2,6 @@
 ---
 - name: Set ansible_facts required by role
   include_tasks: set_vars.yml
+
+- name: Handle system subscription
+  include_tasks: subscription-manager.yml

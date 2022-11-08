@@ -28,6 +28,7 @@
           - ansible-galaxy
           - collection
           - install
+          - "-vv"
           - "-r"
           - "{{ playbook_dir }}/tasks/setup_candlepin_requirements.yml"
       delegate_to: 127.0.0.1

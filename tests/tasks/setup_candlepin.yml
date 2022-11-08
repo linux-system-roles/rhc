@@ -72,4 +72,4 @@
   uri:
     url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
     method: HEAD
-    validate_certs: "{{ not lsr_rhc_test_data.candlepin_insecure }}"
+    validate_certs: false

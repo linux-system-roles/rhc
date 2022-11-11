@@ -28,17 +28,6 @@
       delegate_to: 127.0.0.1
       become: false
 
-    - name: Install collection requirements of candlepin role
-      command:
-        argv:
-          - ansible-galaxy
-          - collection
-          - install
-          - "-r"
-          - "{{ playbook_dir }}/tasks/setup_candlepin_requirements.yml"
-      delegate_to: 127.0.0.1
-      become: false
-
     - name: Create 'candlepin' user
       user:
         name: candlepin
@@ -71,6 +60,9 @@
           candlepin_port: 8443
           candlepin_prefix: /candlepin
           candlepin_insecure: true
+          reg_username: "admin"
+          reg_password: "admin"
+          reg_organization: "admin"
         cacheable: true
   when: lsr_rhc_test_data_file | length == 0
 

@@ -53,6 +53,21 @@
         name: tomcat
         enabled: true
 
+    - name: Ensure /etc/pki/product exists
+      file:
+        path: /etc/pki/product
+        state: directory
+        mode: 0755
+
+    - name: Copy product certificates
+      copy:
+        src: "/home/candlepin/devel/candlepin/generated_certs/{{ item }}.pem"
+        dest: "/etc/pki/product/{{ item }}.pem"
+        remote_src: true
+        mode: 0644
+      loop:
+        - "5050"
+
     - name: Set variables
       set_fact:
         lsr_rhc_test_data:

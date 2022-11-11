@@ -18,3 +18,5 @@
     server_port: "{{ rhc_server.port | d(omit) }}"
     server_prefix: "{{ rhc_server.prefix | d(omit) }}"
     server_insecure: "{{ rhc_server.insecure | d(omit) }}"
+    auto_attach: "{{ true
+      if ( rhc_state | d('present') == 'present' ) else omit }}"

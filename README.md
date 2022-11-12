@@ -8,6 +8,15 @@ An ansible role which registers/connects RHEL systems to Red Hat.
 subscription-manager and insights-client. Both are available from the standard
 RHEL repositories, and subscription-manager is installed by default.
 
+The role requires modules from `community.general`.  If you are using
+`ansible-core`, you must install the `community.general` collection.  Use the
+file `meta/collection-requirements.yml` to install it:
+```
+ansible-galaxy collection install -vv -r meta/collection-requirements.yml
+```
+If you are using Ansible Engine 2.9, or are using an Ansible bundle which
+includes these collections/modules, you should have to do nothing.
+
 ## Role Variables
 
     rhc_state: present

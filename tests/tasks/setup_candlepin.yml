@@ -46,7 +46,7 @@
           vars:
             cp_configure_mariadb: false
             cp_configure_ruby: false
-            cp_deploy_args: "-g -a -f -t"
+            cp_deploy_args: "-g -a -f -t -r"
 
     - name: Enable tomcat
       service:
@@ -67,6 +67,12 @@
         mode: 0644
       loop:
         - "5050"
+
+    - name: Install GPG key for RPM repositories
+      get_url:
+        url: http://127.0.0.1:8080/RPM-GPG-KEY-candlepin
+        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
+        mode: 0644
 
     - name: Set variables
       set_fact:

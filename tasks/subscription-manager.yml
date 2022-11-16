@@ -15,7 +15,7 @@
   changed_when: false
   when:
     - rhc_state | d("present") == "present"
-    - rhc_baseurl | d("") != ""
+    - rhc_baseurl | d("") | length > 0
     - rhc_baseurl is not none
     - rhc_baseurl != omit
 

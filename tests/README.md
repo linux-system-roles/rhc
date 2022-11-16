@@ -16,6 +16,7 @@ lsr_rhc_test_data:
   reg_username: "username"
   reg_password: "password"
   reg_organization: "organization"
+  baseurl: "https://base-url"
 ```
 
 - `candlepin_host` & `candlepin_port` are the hostname & the port of Candlepin
@@ -26,6 +27,7 @@ lsr_rhc_test_data:
   of the user to use in the vast majority of the registration tests;
   `reg_organization` can be specified as `null` in case `reg_username` belongs
   to only one organization
+- `baseurl` is the base URL for receiving content
 
 To use this custom configuration, set the `LSR_RHC_TEST_DATA` environment
 variable to the full path of that file.

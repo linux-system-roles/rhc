@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+---
+- name: subscription-manager repos --{{ mode | d("list") }}
+  shell: |
+    set -euo pipefail
+    subscription-manager repos --{{ mode | d("list") }} |
+    awk '/^Repo ID/ {print $3;}'
+  register: test_repositories
+  changed_when: false

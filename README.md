@@ -81,11 +81,23 @@ rhc_server:
 
 The base URL for receiving content from the subscription server.
 
+    rhc_repositories: []
+
+A list with repositories to enable or disable in the system. Each item
+is a dict containing two keys:
+- `name` represents the name of a repository
+- `state` is the state of it in the system, can be `enabled` or `disabled`
+```yaml
+rhc_repositories:
+  - {name: "repo1", state: enabled}
+  - {name: "repo2", state: disabled}
+```
+
 ## Dependencies
 
 None.
 
-## Example Playbook
+## Example Playbooks
 
 Simple Registration to Red Hat including Insights, assuming authentication
 using username & password:
@@ -99,6 +111,19 @@ using username & password:
         password: !vault |
           $ANSIBLE_VAULT;1.2;AES256;dev
           ....
+  roles:
+    - linux-system-roles.rhc
+```
+
+Ensure that certain RHEL 9 repositories are enabled, and another one is not:
+
+```yaml
+- hosts: all
+  vars:
+    rhc_repositories:
+      - {name: "rhel-9-for-x86_64-baseos-rpms", state: enabled}
+      - {name: "rhel-9-for-x86_64-appstream-rpms", state: enabled}
+      - {name: "codeready-builder-for-rhel-9-x86_64-rpms", state: disabled}
   roles:
     - linux-system-roles.rhc
 ```

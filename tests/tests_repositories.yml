@@ -1,0 +1,84 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Basic repository enablement/disablement test
+  hosts: all
+  gather_facts: true
+  become: true
+  tags:
+    - tests::slow
+  tasks:
+    - name: Setup Candlepin
+      import_tasks: tasks/setup_candlepin.yml
+
+    - name: Test repositories
+      block:
+        - name: Register
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_repositories: "{{ lsr_rhc_test_data.repositories }}"
+
+        - name: Get enabled repositories
+          include_tasks: list_repositories.yml
+          vars:
+            mode: list-enabled
+
+        - name: Check repositories to enable are enabled
+          assert:
+            that:
+              - item.name in test_repositories.stdout_lines
+          when: item.state | d("enabled") == "enabled"
+          loop: "{{ lsr_rhc_test_data.repositories }}"
+
+        - name: Get disabled repositories
+          include_tasks: list_repositories.yml
+          vars:
+            mode: list-disabled
+
+        - name: Check repositories to disable are disabled
+          assert:
+            that:
+              - item.name in test_repositories.stdout_lines
+          when: item.state | d("enabled") == "disabled"
+          loop: "{{ lsr_rhc_test_data.repositories }}"
+
+        - name: Disable all the repositories
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            # TODO: make it work without rhc_auth
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_repositories:
+              - {name: "*", state: disabled}
+
+        - name: Get enabled repositories
+          include_tasks: list_repositories.yml
+          vars:
+            mode: list-enabled
+
+        - name: Check there are no repositories enabled
+          assert:
+            that:
+              - test_repositories.stdout_lines | length == 0
+
+      always:
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent

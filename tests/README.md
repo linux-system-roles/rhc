@@ -17,6 +17,9 @@ lsr_rhc_test_data:
   reg_password: "password"
   reg_organization: "organization"
   baseurl: "https://base-url"
+  repositories:
+    - {name: "repo1", state: enabled}
+    - {name: "repo2", state: disabled}
 ```
 
 - `candlepin_host` & `candlepin_port` are the hostname & the port of Candlepin
@@ -28,6 +31,9 @@ lsr_rhc_test_data:
   `reg_organization` can be specified as `null` in case `reg_username` belongs
   to only one organization
 - `baseurl` is the base URL for receiving content
+- `repositories` is a list of repositories to use in tests for content,
+  and to assert for enablement/disablement; it has the same format of the
+  `rhc_repositories` parameter of the `rhc` role
 
 To use this custom configuration, set the `LSR_RHC_TEST_DATA` environment
 variable to the full path of that file.

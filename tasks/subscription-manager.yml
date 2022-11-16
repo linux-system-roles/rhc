@@ -33,3 +33,16 @@
     server_insecure: "{{ rhc_server.insecure | d(omit) }}"
     auto_attach: "{{ true
       if ( rhc_state | d('present') == 'present' ) else omit }}"
+
+- name: Configure subscribed system
+  when:
+    - rhc_state | d("present") == "present"
+  block:
+    - name: Configure repositories
+      rhsm_repository:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+        purge: no
+      loop: "{{ rhc_repositories }}"
+      when:
+        - ( rhc_repositories | d([]) ) | length > 0

@@ -85,6 +85,9 @@
           reg_password: "admin"
           reg_organization: "admin"
           baseurl: "http://127.0.0.1:8080"
+          repositories:
+            - {name: "admin-content-label-5051", state: enabled}
+            - {name: "content-label-32060", state: disabled}
         cacheable: true
   when: lsr_rhc_test_data_file | length == 0
 

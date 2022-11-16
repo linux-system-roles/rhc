@@ -6,6 +6,19 @@
     state: present
   when: rhc_state | d('present') == "present"
 
+- name: Change rhsm.baseurl
+  command:
+    argv:
+      - subscription-manager
+      - config
+      - "--rhsm.baseurl={{ rhc_baseurl }}"
+  changed_when: false
+  when:
+    - rhc_state | d("present") == "present"
+    - rhc_baseurl | d("") != ""
+    - rhc_baseurl is not none
+    - rhc_baseurl != omit
+
 - name: Call subscription-manager
   redhat_subscription:
     state: "{{ rhc_state | d('present') }}"

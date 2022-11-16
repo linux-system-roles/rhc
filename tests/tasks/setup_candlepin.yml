@@ -84,6 +84,7 @@
           reg_username: "admin"
           reg_password: "admin"
           reg_organization: "admin"
+          baseurl: "http://127.0.0.1:8080"
         cacheable: true
   when: lsr_rhc_test_data_file | length == 0
 

@@ -77,6 +77,10 @@ rhc_server:
 - `insecure` specifies whether to disable the validation of the SSL certificate
   of the registration server
 
+    rhc_baseurl: ""
+
+The base URL for receiving content from the subscription server.
+
 ## Dependencies
 
 None.

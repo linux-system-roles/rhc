@@ -20,6 +20,8 @@
               login:
                 username: "{{ lsr_rhc_test_data.reg_username }}"
                 password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
             rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
             rhc_server:
               hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
@@ -57,6 +59,8 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
+            rhc_insights:
+              state: absent
             rhc_repositories:
               - {name: "*", state: disabled}
 

@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure required packages are installed
+  package:
+    name: insights-client
+    state: present
+
+- name: Call insights status
+  include_tasks: check-insights-status.yml
+
+- name: Register insights-client
+  command: insights-client --register
+  when:
+    - >-
+      "NOT" in __rhc_insights_status.stdout
+      or "unregistered" in __rhc_insights_status.stdout
+  register: __rhc_insights_registration_result

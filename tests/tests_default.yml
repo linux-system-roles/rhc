@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure that the role runs with default parameters
+  hosts: all
+  tasks:
+    - name: Verify that by default the role fails without credentials
+      block:
+        - name: Run the role with default parameters
+          include_role:
+            name: linux-system-roles.rhc
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+
+      rescue:
+        - name: Assert that the role failed with missing credentials
+          assert:
+            that: >-
+              'state is present but any of the following are missing'
+              in ansible_failed_result.msg

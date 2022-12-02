@@ -20,7 +20,7 @@
     - rhc_baseurl | string | length > 0
 
 - name: Call subscription-manager
-  redhat_subscription:
+  community.general.redhat_subscription:
     state: "{{ rhc_state | d('present') }}"
     username: "{{ rhc_auth.login.username | d(omit) }}"
     password: "{{ rhc_auth.login.password | d(omit) }}"
@@ -39,7 +39,7 @@
     - rhc_state | d("present") == "present"
   block:
     - name: Configure repositories
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: "{{ item.name }}"
         state: "{{ item.state }}"
         purge: no

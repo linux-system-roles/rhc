@@ -5,3 +5,6 @@
 __rhc_required_facts:
   - distribution
   - distribution_major_version
+
+__rhc_state_absent:
+  state: absent

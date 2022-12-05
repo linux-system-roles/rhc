@@ -98,6 +98,7 @@
           repositories:
             - {name: "admin-content-label-5051", state: enabled}
             - {name: "content-label-32060", state: disabled}
+          release: null  # no releases in Candlepin test data
         cacheable: true
   when: lsr_rhc_test_data_file | length == 0
 

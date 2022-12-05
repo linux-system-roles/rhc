@@ -20,6 +20,7 @@ lsr_rhc_test_data:
   repositories:
     - {name: "repo1", state: enabled}
     - {name: "repo2", state: disabled}
+  release: "some-release"
 ```
 
 - `candlepin_host` & `candlepin_port` are the hostname & the port of Candlepin
@@ -34,6 +35,8 @@ lsr_rhc_test_data:
 - `repositories` is a list of repositories to use in tests for content,
   and to assert for enablement/disablement; it has the same format of the
   `rhc_repositories` parameter of the `rhc` role
+- `release` is a release to set for the system; it has the same format of the
+  `rhc_release` parameter of the `rhc` role
 
 To use this custom configuration, set the `LSR_RHC_TEST_DATA` environment
 variable to the full path of that file.

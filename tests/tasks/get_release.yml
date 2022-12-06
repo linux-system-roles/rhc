@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+---
+- name: subscription-manager release --show
+  shell: |
+    set -euo pipefail
+    subscription-manager release --show |
+    awk '/^Release: / {print $2}'
+  register: test_release
+  changed_when: false

@@ -1,0 +1,133 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Basic release test
+  hosts: all
+  gather_facts: true
+  become: true
+  tags:
+    - tests::slow
+  tasks:
+    - name: Setup Candlepin
+      import_tasks: tasks/setup_candlepin.yml
+
+    - name: Skip if no test release is set
+      meta: end_play
+      when:
+        - lsr_rhc_test_data.release | d(none) is none
+
+    - name: Test release
+      block:
+        - name: Register
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check wanted release is set
+          assert:
+            that:
+              - lsr_rhc_test_data.release == test_release.stdout
+
+        - name: Unset the release
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            # TODO: make it work without rhc_auth
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_release: {"state":"absent"}
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check no release is set
+          assert:
+            that:
+              - test_release.stdout | length == 0
+
+        - name: Unset the release (noop)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            # TODO: make it work without rhc_auth
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_release: {"state":"absent"}
+
+        - name: Check invalid releases cannot be set
+          block:
+            - name: Set an invalid release
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                # TODO: make it work without rhc_auth
+                rhc_auth:
+                  login:
+                    username: "{{ lsr_rhc_test_data.reg_username }}"
+                    password: "{{ lsr_rhc_test_data.reg_password }}"
+                # look like a valid release number, hopefully it will never
+                # be used!
+                rhc_release: "1.99"
+
+            - name: Unreachable task
+              fail:
+                msg: The above task must fail
+          rescue:
+            - name: Assert that the role failed
+              assert:
+                that: >-
+                  'No releases match ' in ansible_failed_result.msg
+
+        - name: Set the release when not registering
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            # TODO: make it work without rhc_auth
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check wanted release is set
+          assert:
+            that:
+              - lsr_rhc_test_data.release == test_release.stdout
+
+        - name: Set the release when not registering (noop)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            # TODO: make it work without rhc_auth
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+
+      always:
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent

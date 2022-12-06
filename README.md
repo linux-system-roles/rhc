@@ -93,6 +93,11 @@ rhc_repositories:
   - {name: "repo2", state: disabled}
 ```
 
+    rhc_release: "release"
+
+A release to set for the system. Use `{"state":"absent"}` to actually unset the
+release set for the system.
+
 ## Dependencies
 
 None.

@@ -6,6 +6,15 @@
     state: present
   when: rhc_state | d('present') == "present"
 
+- name: Get subscription status
+  command:
+    argv:
+      - subscription-manager
+      - identity
+  register: __rhc_subman_identity
+  changed_when: false
+  failed_when: __rhc_subman_identity.rc not in [0, 1]
+
 - name: Change rhsm.baseurl
   command:
     argv:
@@ -33,11 +42,30 @@
     server_insecure: "{{ rhc_server.insecure | d(omit) }}"
     auto_attach: "{{ true
       if ( rhc_state | d('present') == 'present' ) else omit }}"
+    release: "{{ rhc_release
+      if ( rhc_state | d('present') == 'present'
+           and __rhc_subman_identity.rc == 1
+           and rhc_release != __rhc_state_absent )
+      else omit }}"
 
 - name: Configure subscribed system
   when:
     - rhc_state | d("present") == "present"
   block:
+    - name: Set the release
+      community.general.rhsm_release:
+        release: "{{ rhc_release }}"
+      when:
+        - __rhc_subman_identity.rc == 0
+        - rhc_release != __rhc_state_absent
+
+    - name: Unset the release
+      community.general.rhsm_release:
+        release: null
+      when:
+        - __rhc_subman_identity.rc == 0
+        - rhc_release == __rhc_state_absent
+
     - name: Configure repositories
       community.general.rhsm_repository:
         name: "{{ item.name }}"

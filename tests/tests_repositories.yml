@@ -30,7 +30,7 @@
             rhc_repositories: "{{ lsr_rhc_test_data.repositories }}"
 
         - name: Get enabled repositories
-          include_tasks: list_repositories.yml
+          include_tasks: tasks/list_repositories.yml
           vars:
             mode: list-enabled
 
@@ -42,7 +42,7 @@
           loop: "{{ lsr_rhc_test_data.repositories }}"
 
         - name: Get disabled repositories
-          include_tasks: list_repositories.yml
+          include_tasks: tasks/list_repositories.yml
           vars:
             mode: list-disabled
 
@@ -67,7 +67,7 @@
               - {name: "*", state: disabled}
 
         - name: Get enabled repositories
-          include_tasks: list_repositories.yml
+          include_tasks: tasks/list_repositories.yml
           vars:
             mode: list-enabled
 

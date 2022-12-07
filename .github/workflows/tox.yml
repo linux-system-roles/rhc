@@ -43,8 +43,10 @@ jobs:
           sudo apt-get install -y git
           pip install "$TOX_LSR"
           lsr_ci_preinstall
-          sudo apt-get purge -y moby-cli
-          sudo apt-get install -y podman-docker
+          if [ "${{ matrix.pyver_os.os }}" = ubuntu-latest ]; then
+              sudo apt-get purge -y moby-cli
+              sudo apt-get install -y podman-docker
+          fi
       - name: Run tox tests
         run: |
           set -euxo pipefail

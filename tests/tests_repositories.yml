@@ -57,11 +57,6 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
-            # TODO: make it work without rhc_auth
-            rhc_auth:
-              login:
-                username: "{{ lsr_rhc_test_data.reg_username }}"
-                password: "{{ lsr_rhc_test_data.reg_password }}"
             rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
             rhc_repositories:
               - {name: "*", state: disabled}

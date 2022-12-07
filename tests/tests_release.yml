@@ -45,11 +45,6 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
-            # TODO: make it work without rhc_auth
-            rhc_auth:
-              login:
-                username: "{{ lsr_rhc_test_data.reg_username }}"
-                password: "{{ lsr_rhc_test_data.reg_password }}"
             rhc_release: {"state":"absent"}
 
         - name: Get set release
@@ -64,11 +59,6 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
-            # TODO: make it work without rhc_auth
-            rhc_auth:
-              login:
-                username: "{{ lsr_rhc_test_data.reg_username }}"
-                password: "{{ lsr_rhc_test_data.reg_password }}"
             rhc_release: {"state":"absent"}
 
         - name: Check invalid releases cannot be set
@@ -77,11 +67,6 @@
               include_role:
                 name: linux-system-roles.rhc
               vars:
-                # TODO: make it work without rhc_auth
-                rhc_auth:
-                  login:
-                    username: "{{ lsr_rhc_test_data.reg_username }}"
-                    password: "{{ lsr_rhc_test_data.reg_password }}"
                 # look like a valid release number, hopefully it will never
                 # be used!
                 rhc_release: "1.99"
@@ -99,11 +84,6 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
-            # TODO: make it work without rhc_auth
-            rhc_auth:
-              login:
-                username: "{{ lsr_rhc_test_data.reg_username }}"
-                password: "{{ lsr_rhc_test_data.reg_password }}"
             rhc_release: "{{ lsr_rhc_test_data.release }}"
 
         - name: Get set release
@@ -118,11 +98,6 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
-            # TODO: make it work without rhc_auth
-            rhc_auth:
-              login:
-                username: "{{ lsr_rhc_test_data.reg_username }}"
-                password: "{{ lsr_rhc_test_data.reg_password }}"
             rhc_release: "{{ lsr_rhc_test_data.release }}"
 
       always:

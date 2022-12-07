@@ -8,3 +8,8 @@ __rhc_required_facts:
 
 __rhc_state_absent:
   state: absent
+
+# this is a placeholder/fake credential to use in case we need to pass
+# credentials to the 'redhat_subscription' module, even when no registration
+# is needed
+__rhc_fake_credential: "this-is-not-a-credential!"

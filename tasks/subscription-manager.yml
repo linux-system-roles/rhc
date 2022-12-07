@@ -31,8 +31,14 @@
 - name: Call subscription-manager
   community.general.redhat_subscription:
     state: "{{ rhc_state | d('present') }}"
-    username: "{{ rhc_auth.login.username | d(omit) }}"
-    password: "{{ rhc_auth.login.password | d(omit) }}"
+    username: "{{ __rhc_fake_credential
+      if ( rhc_state | d('present') == 'present'
+           and __rhc_subman_identity.rc == 0 )
+      else ( rhc_auth.login.username | d(omit) ) }}"
+    password: "{{ __rhc_fake_credential
+      if ( rhc_state | d('present') == 'present'
+           and __rhc_subman_identity.rc == 0 )
+      else ( rhc_auth.login.password | d(omit) ) }}"
     activationkey: "{{ rhc_auth.activation_keys.keys | join(',')
       if ( rhc_auth.activation_keys.keys is defined ) else omit }}"
     org_id: "{{ rhc_organization | d(omit) }}"

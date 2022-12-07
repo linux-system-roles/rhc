@@ -73,7 +73,7 @@
 
     - name: Install GPG key for RPM repositories
       get_url:
-        url: http://127.0.0.1:8080/RPM-GPG-KEY-candlepin
+        url: http://localhost:8080/RPM-GPG-KEY-candlepin
         dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
         mode: 0644
 
@@ -87,14 +87,14 @@
     - name: Set variables
       set_fact:
         lsr_rhc_test_data:
-          candlepin_host: 127.0.0.1
+          candlepin_host: localhost
           candlepin_port: 8443
           candlepin_prefix: /candlepin
           candlepin_insecure: false
           reg_username: "admin"
           reg_password: "admin"
           reg_organization: "admin"
-          baseurl: "http://127.0.0.1:8080"
+          baseurl: "http://localhost:8080"
           repositories:
             - {name: "admin-content-label-5051", state: enabled}
             - {name: "content-label-32060", state: disabled}

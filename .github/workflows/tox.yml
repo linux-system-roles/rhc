@@ -51,8 +51,8 @@ jobs:
           case "$toxpyver" in
           27) toxenvs="${toxenvs},coveralls,flake8,pylint" ;;
           36) toxenvs="${toxenvs},coveralls,black,yamllint,shellcheck" ;;
-          38) toxenvs="${toxenvs},coveralls,ansible-lint,ansible-plugin-scan,collection,ansible-test" ;;
-          39) toxenvs="${toxenvs},coveralls,ansible-managed-var-comment" ;;
+          38) toxenvs="${toxenvs},coveralls,ansible-plugin-scan,collection,ansible-test" ;;
+          39) toxenvs="${toxenvs},coveralls,ansible-lint,ansible-managed-var-comment" ;;
           310) toxenvs="${toxenvs},coveralls,check-meta-versions" ;;
           311) toxenvs="${toxenvs},coveralls" ;;
           esac

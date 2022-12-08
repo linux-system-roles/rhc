@@ -45,7 +45,8 @@
     server_hostname: "{{ rhc_server.hostname | d(omit) }}"
     server_port: "{{ rhc_server.port | d(omit) }}"
     server_prefix: "{{ rhc_server.prefix | d(omit) }}"
-    server_insecure: "{{ rhc_server.insecure | d(omit) }}"
+    server_insecure: "{{ omit if ( rhc_server.insecure | d(omit) == omit )
+      else rhc_server.insecure | ternary('1', '0') }}"
     auto_attach: "{{ true
       if ( rhc_state | d('present') == 'present' ) else omit }}"
     release: "{{ rhc_release

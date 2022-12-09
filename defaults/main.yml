@@ -3,6 +3,7 @@
 rhc_auth: {}
 rhc_baseurl: null
 rhc_organization: null
+rhc_proxy: {}
 rhc_release: null
 rhc_repositories: []
 rhc_server: {}

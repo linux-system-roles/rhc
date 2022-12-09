@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Install and configure squid
+  when:
+    - lsr_rhc_test_data.proxy_noauth_hostname == "localhost"
+  block:
+    - name: Install packages for squid
+      package:
+        name:
+          - squid
+          - httpd-tools
+        state: present
+
+    - name: Check the status of the backup of configuration
+      stat:
+        path: /etc/squid/squid.conf.BACKUP
+      register: squid_conf_backup_stat
+
+    - name: Backup the configuration
+      copy:
+        src: /etc/squid/squid.conf
+        dest: /etc/squid/squid.conf.BACKUP
+        remote_src: true
+        mode: 0644
+      when:
+        - not squid_conf_backup_stat.stat.exists
+
+    - name: Copy the pristine configuration back
+      copy:
+        src: /etc/squid/squid.conf.BACKUP
+        dest: /etc/squid/squid.conf
+        remote_src: true
+        mode: 0644
+      when:
+        - squid_conf_backup_stat.stat.exists
+
+    - name: Open the Candlepin port
+      lineinfile:
+        path: /etc/squid/squid.conf
+        regexp: "^acl SSL_ports port {{ lsr_rhc_test_data.candlepin_port }}"
+        insertbefore: "^acl Safe_ports "
+        line: >-
+          acl SSL_ports port {{ lsr_rhc_test_data.candlepin_port }} # Candlepin
+
+    - name: Setup no authentication
+      when:
+        - not (authentication | d(false))
+      block:
+        - name: Set the port
+          lineinfile:
+            path: /etc/squid/squid.conf
+            regexp: "^http_port "
+            line: "http_port {{ lsr_rhc_test_data.proxy_noauth_port }}"
+
+    - name: Setup authenticated
+      when:
+        - authentication | d(false)
+      block:
+        - name: Create the new passwd file
+          command:
+            argv:
+              - htpasswd
+              - "-c"
+              - "-b"
+              - "-m"
+              - /etc/squid/passwd
+              - "{{ lsr_rhc_test_data.proxy_auth_username }}"
+              - "{{ lsr_rhc_test_data.proxy_auth_password }}"
+
+        - name: Set the port
+          lineinfile:
+            path: /etc/squid/squid.conf
+            regexp: "^http_port "
+            line: "http_port {{ lsr_rhc_test_data.proxy_auth_port }}"
+
+        - name: Insert auth config into configuration
+          blockinfile:
+            path: /etc/squid/squid.conf
+            # yamllint disable rule:line-length
+            block: |
+              auth_param basic program /usr/lib64/squid/basic_ncsa_auth /etc/squid/passwd
+              auth_param basic realm squid realm
+            # yamllint enable rule:line-length
+
+    - name: Restart squid
+      service:
+        name: squid
+        state: restarted

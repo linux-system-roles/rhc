@@ -98,6 +98,26 @@ rhc_repositories:
 A release to set for the system. Use `{"state":"absent"}` to actually unset the
 release set for the system.
 
+    rhc_proxy: {}
+
+The details of the proxy server to use for connecting:
+```yaml
+rhc_proxy:
+  hostname: "proxy-hostname"
+  port: 4321
+  username: "proxy-hostname"
+  password: "proxy-password"
+```
+- `hostname` is the hostname of the proxy server
+- `port` is the port to which connect to on the proxy server
+- `username` is the username to use for authenticating on the proxy server;
+  it can be not specified if the proxy server does not require authentication
+- `password` is the password to use for authenticating on the proxy server;
+  it can be not specified if the proxy server does not require authentication
+
+Use `{"state":"absent"}` to reset all the proxy configurations to empty
+(effectively disabling the proxy server).
+
 ## Dependencies
 
 None.

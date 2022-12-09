@@ -54,6 +54,34 @@
            and __rhc_subman_identity.rc == 1
            and rhc_release != __rhc_state_absent )
       else omit }}"
+    server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'hostname' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.hostname }}
+      {%- endif %}"
+    server_proxy_port: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'port' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.port }}
+      {%- endif %}"
+    server_proxy_user: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'username' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.username }}
+      {%- endif %}"
+    server_proxy_password: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'password' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.password }}
+      {%- endif %}"
 
 - name: Configure subscribed system
   when:

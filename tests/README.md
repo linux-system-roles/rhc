@@ -21,6 +21,16 @@ lsr_rhc_test_data:
     - {name: "repo1", state: enabled}
     - {name: "repo2", state: disabled}
   release: "some-release"
+  proxy_noauth_hostname: proxy-without-auth.hostname
+  proxy_noauth_port: port
+  proxy_auth_hostname: proxy-requiring-auth.hostname
+  proxy_auth_port: port
+  proxy_auth_username: "proxy-username"
+  proxy_auth_password: "proxy-password"
+  proxy_nonworking_hostname: must-not-exist.hostname
+  proxy_nonworking_port: invalid-port
+  proxy_nonworking_username: "wrong-username"
+  proxy_nonworking_password: "wrong-password"
 ```
 
 - `candlepin_host` & `candlepin_port` are the hostname & the port of Candlepin
@@ -37,6 +47,15 @@ lsr_rhc_test_data:
   `rhc_repositories` parameter of the `rhc` role
 - `release` is a release to set for the system; it has the same format of the
   `rhc_release` parameter of the `rhc` role
+- the various `proxy_*` variables represent proxy-related bits:
+   - `proxy_noauth_hostname` & `proxy_noauth_port` are the hostname & the port
+     of a proxy server that does not require authentication
+   - `proxy_auth_hostname`, `proxy_auth_port`, `proxy_auth_username` &
+     `proxy_auth_password` are the hostname & the port of a proxy server that
+      requires authentication, together with the credentials for it
+   - `proxy_nonworking_hostname`, `proxy_nonworking_port`,
+     `proxy_nonworking_username` & `proxy_nonworking_password` are wrong details
+     of proxy server configuration bits
 
 To use this custom configuration, set the `LSR_RHC_TEST_DATA` environment
 variable to the full path of that file.

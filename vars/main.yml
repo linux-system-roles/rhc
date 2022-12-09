@@ -13,3 +13,6 @@ __rhc_state_absent:
 # credentials to the 'redhat_subscription' module, even when no registration
 # is needed
 __rhc_fake_credential: "this-is-not-a-credential!"
+
+# empty string, used in case a variable is needed for an empty string
+__rhc_empty_string: ""

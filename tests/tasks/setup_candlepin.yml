@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 ---
 - name: Get LSR_RHC_TEST_DATA environment variable
   set_fact:

@@ -3,5 +3,21 @@
 - name: Set ansible_facts required by role
   include_tasks: set_vars.yml
 
+- name: Handle insights unregistration
+  include_tasks: insights-client-unregistration.yml
+  when:
+  - ansible_distribution == "RedHat"
+  - >-
+    rhc_insights.state | d("present") == "absent"
+    or rhc_state | d("present") == "absent"
+  - '"insights-client" in ansible_facts.packages'
+
 - name: Handle system subscription
   include_tasks: subscription-manager.yml
+
+- name: Handle insights registration
+  include_tasks: insights-client.yml
+  when:
+  - ansible_distribution == "RedHat"
+  - rhc_insights.state | d("present") == "present"
+  - rhc_state | d("present") == "present"

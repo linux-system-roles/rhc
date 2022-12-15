@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Call insights status
+  command: insights-client --status
+  changed_when: false
+  register: __rhc_insights_status
+  failed_when: __rhc_insights_status.rc not in [0,1]

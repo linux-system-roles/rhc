@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Call insights status
+  include_tasks: check-insights-status.yml
+
+- name: Unregister insights-client
+  command: insights-client --unregister
+  when:
+    - >-
+      "This host is registered" in __rhc_insights_status.stdout
+      or "Registered" in __rhc_insights_status.stdout
+  register: __rhc_insights_unregister_result

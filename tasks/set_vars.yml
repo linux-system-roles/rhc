@@ -5,3 +5,11 @@
     gather_subset: min
   when: not ansible_facts.keys() | list |
     intersect(__rhc_required_facts) == __rhc_required_facts
+
+- name: Check if insights-client is installed
+  package_facts:
+  when:
+    - ansible_distribution == "RedHat"
+    - >-
+      rhc_insights.state | d("present") == "absent"
+      or rhc_state | d("present") == "absent"

@@ -24,6 +24,7 @@
     - name: Clone ansible-role-candlepin repo
       git:
         repo: https://github.com/candlepin/ansible-role-candlepin.git
+        # wokeignore:rule=master
         version: master
         dest: "{{ playbook_dir }}/roles/candlepin"
       delegate_to: 127.0.0.1

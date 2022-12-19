@@ -97,14 +97,19 @@ rhc_repositories:
 
 A release to set for the system. Use `{"state":"absent"}` to actually unset the
 release set for the system.
-```
-rhc_insights:
-  state: present
-```
+
+    rhc_insights:
+      state: present
+
 
 Whether the system is connected to Insights; valid values are `present`
 (to ensure registration/connection), and `absent`.
 
+    rhc_inisghts:
+      force_register: present
+
+To force a registration of insights-client. This will provide a fresh registration
+of the client. 
 
     rhc_proxy: {}
 

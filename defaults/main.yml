@@ -4,6 +4,7 @@ rhc_auth: {}
 rhc_baseurl: null
 rhc_insights:
   state: present
+  force_register: false
 rhc_organization: null
 rhc_proxy: {}
 rhc_release: null

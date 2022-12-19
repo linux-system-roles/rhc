@@ -63,3 +63,10 @@
         name: linux-system-roles.rhc
       vars:
         rhc_state: absent
+
+    - name: Force insights registration
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_insights:
+          force_register: true

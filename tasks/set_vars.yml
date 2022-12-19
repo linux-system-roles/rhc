@@ -13,3 +13,4 @@
     - >-
       rhc_insights.state | d("present") == "absent"
       or rhc_state | d("present") == "absent"
+      or rhc_insights.force_register

@@ -29,30 +29,31 @@
     - rhc_baseurl | string | length > 0
 
 - name: Call subscription-manager
+  # noqa jinja[spacing]
   community.general.redhat_subscription:
     state: "{{ rhc_state | d('present') }}"
     username: "{{ __rhc_fake_credential
-      if ( rhc_state | d('present') == 'present'
-           and __rhc_subman_identity.rc == 0 )
-      else ( rhc_auth.login.username | d(omit) ) }}"
+      if (rhc_state | d('present') == 'present'
+           and __rhc_subman_identity.rc == 0)
+      else (rhc_auth.login.username | d(omit)) }}"
     password: "{{ __rhc_fake_credential
-      if ( rhc_state | d('present') == 'present'
-           and __rhc_subman_identity.rc == 0 )
-      else ( rhc_auth.login.password | d(omit) ) }}"
+      if (rhc_state | d('present') == 'present'
+           and __rhc_subman_identity.rc == 0)
+      else (rhc_auth.login.password | d(omit)) }}"
     activationkey: "{{ rhc_auth.activation_keys.keys | join(',')
-      if ( rhc_auth.activation_keys.keys is defined ) else omit }}"
+      if (rhc_auth.activation_keys.keys is defined) else omit }}"
     org_id: "{{ rhc_organization | d(omit) }}"
     server_hostname: "{{ rhc_server.hostname | d(omit) }}"
     server_port: "{{ rhc_server.port | d(omit) }}"
     server_prefix: "{{ rhc_server.prefix | d(omit) }}"
-    server_insecure: "{{ omit if ( rhc_server.insecure | d(omit) == omit )
+    server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
       else rhc_server.insecure | ternary('1', '0') }}"
     auto_attach: "{{ true
-      if ( rhc_state | d('present') == 'present' ) else omit }}"
+      if (rhc_state | d('present') == 'present') else omit }}"
     release: "{{ rhc_release
-      if ( rhc_state | d('present') == 'present'
+      if (rhc_state | d('present') == 'present'
            and __rhc_subman_identity.rc == 1
-           and rhc_release != __rhc_state_absent )
+           and rhc_release != __rhc_state_absent)
       else omit }}"
     server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
       {{ __rhc_empty_string }}
@@ -105,7 +106,7 @@
       community.general.rhsm_repository:
         name: "{{ item.name }}"
         state: "{{ item.state }}"
-        purge: no
+        purge: false
       loop: "{{ rhc_repositories }}"
       when:
         - ( rhc_repositories | d([]) ) | length > 0

@@ -14,6 +14,7 @@
   become: false
 
 - name: Deploy Candlepin
+  when: lsr_rhc_test_data_file | length == 0
   block:
     - name: Skip on OSes not supported by Candlepin
       meta: end_play
@@ -112,7 +113,6 @@
           proxy_nonworking_username: "wrong-proxyuser"
           proxy_nonworking_password: "wrong-proxypassword"
         cacheable: true
-  when: lsr_rhc_test_data_file | length == 0
 
 - name: Check Candlepin works
   uri:

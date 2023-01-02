@@ -53,8 +53,7 @@
             line: "http_port {{ lsr_rhc_test_data.proxy_noauth_port }}"
 
     - name: Setup authenticated
-      when:
-        - authentication | d(false)
+      when: authentication | d(false)
       block:
         - name: Create the new passwd file
           command:
@@ -66,6 +65,7 @@
               - /etc/squid/passwd
               - "{{ lsr_rhc_test_data.proxy_auth_username }}"
               - "{{ lsr_rhc_test_data.proxy_auth_password }}"
+          changed_when: false
 
         - name: Set the port
           lineinfile:

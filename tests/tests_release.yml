@@ -47,6 +47,8 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
+            rhc_insights:
+              state: absent
             rhc_release: {"state":"absent"}
 
         - name: Get set release
@@ -61,6 +63,8 @@
           include_role:
             name: linux-system-roles.rhc
           vars:
+            rhc_insights:
+              state: absent
             rhc_release: {"state":"absent"}
 
         - name: Check invalid releases cannot be set

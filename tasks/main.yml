@@ -9,7 +9,7 @@
   - ansible_distribution == "RedHat"
   - >-
     rhc_insights.state | d("present") == "absent"
-    or rhc_state | d("present") == "absent"
+    or rhc_state | d("present") in ["absent", "reconnect"]
   - '"insights-client" in ansible_facts.packages'
 
 - name: Handle system subscription
@@ -20,4 +20,4 @@
   when:
   - ansible_distribution == "RedHat"
   - rhc_insights.state | d("present") == "present"
-  - rhc_state | d("present") == "present"
+  - rhc_state | d("present") in ["present", "reconnect"]

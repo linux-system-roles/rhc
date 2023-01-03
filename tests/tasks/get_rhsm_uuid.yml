@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Run subscription-manager identity
+  shell: |
+    set -euo pipefail
+    subscription-manager identity |
+    awk '/^system identity: / {print $3}'
+  register: test_rhsm_uuid
+  changed_when: false

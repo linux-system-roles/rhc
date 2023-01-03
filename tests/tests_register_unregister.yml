@@ -44,6 +44,43 @@
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
 
+    - name: Get rhsm UUID
+      include_tasks: tasks/get_rhsm_uuid.yml
+
+    - name: Rename the rhsm UUID to test_rhsm_uuid_before
+      set_fact:
+        test_rhsm_uuid_before: "{{ test_rhsm_uuid }}"
+
+    - name: Register (force)
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_auth:
+          login:
+            username: "{{ lsr_rhc_test_data.reg_username }}"
+            password: "{{ lsr_rhc_test_data.reg_password }}"
+        rhc_insights:
+          state: absent
+        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+        rhc_server:
+          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+          port: "{{ lsr_rhc_test_data.candlepin_port }}"
+          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_state: reconnect
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+    - name: Get rhsm UUID
+      include_tasks: tasks/get_rhsm_uuid.yml
+
+    - name: Rename the rhsm UUID to test_rhsm_uuid_after
+      set_fact:
+        test_rhsm_uuid_after: "{{ test_rhsm_uuid }}"
+
+    - name: Check the rhsm UUID changed
+      assert:
+        that: test_rhsm_uuid_before.stdout != test_rhsm_uuid_after.stdout
+
     - name: Unregister
       include_role:
         name: linux-system-roles.rhc

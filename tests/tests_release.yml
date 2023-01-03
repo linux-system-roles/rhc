@@ -108,6 +108,58 @@
               state: absent
             rhc_release: "{{ lsr_rhc_test_data.release }}"
 
+        - name: Register (forced, without release)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_release: {"state":"absent"}
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check no release is set
+          assert:
+            that:
+              - test_release.stdout | length == 0
+
+        - name: Register (forced, with release)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check wanted release is set
+          assert:
+            that:
+              - lsr_rhc_test_data.release == test_release.stdout
+
       always:
         - name: Unregister
           include_role:

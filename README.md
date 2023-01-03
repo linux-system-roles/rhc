@@ -22,7 +22,11 @@ includes these collections/modules, you should have to do nothing.
     rhc_state: present
 
 Whether the system is connected to Red Hat; valid values are `present`
-(to ensure registration/connection), and `absent`.
+(to ensure registration/connection), `absent`, and `reconnect`.
+
+When using `reconnect`, the system will be unregistered/disconnected in case
+it was already registered/connected; because of this, the role will always
+report a "changed" status.
 
     rhc_organization: "your-organization"
 

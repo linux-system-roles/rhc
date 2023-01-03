@@ -12,4 +12,4 @@
     - ansible_distribution == "RedHat"
     - >-
       rhc_insights.state | d("present") == "absent"
-      or rhc_state | d("present") == "absent"
+      or rhc_state | d("present") in ["absent", "reconnect"]

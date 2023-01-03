@@ -7,11 +7,14 @@
 
 - name: Call insights status
   include_tasks: check-insights-status.yml
+  when:
+    - rhc_state | d("present") != "reconnect"
 
 - name: Register insights-client
   command: insights-client --register
   when:
     - >-
-      "NOT" in __rhc_insights_status.stdout
+      rhc_state | d("present") == "reconnect"
+      or "NOT" in __rhc_insights_status.stdout
       or "unregistered" in __rhc_insights_status.stdout
   register: __rhc_insights_registration_result

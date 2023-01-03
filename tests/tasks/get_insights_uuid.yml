@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Slurp /etc/insights-client/machine-id
+  slurp:
+    src: /etc/insights-client/machine-id
+  register: test_insights_uuid_slurp
+
+- name: Set /etc/insights-client/machine-id into variable
+  set_fact:
+    test_insights_uuid: "{{ test_insights_uuid_slurp['content'] | b64decode }}"

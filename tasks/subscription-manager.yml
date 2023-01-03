@@ -11,6 +11,8 @@
     argv:
       - subscription-manager
       - identity
+  when:
+    - rhc_state | d("present") == "present"
   register: __rhc_subman_identity
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
@@ -23,7 +25,7 @@
       - "--rhsm.baseurl={{ rhc_baseurl }}"
   changed_when: false
   when:
-    - rhc_state | d("present") == "present"
+    - rhc_state | d("present") in ["present", "reconnect"]
     - rhc_baseurl is not none
     - rhc_baseurl != omit
     - rhc_baseurl | string | length > 0
@@ -31,7 +33,9 @@
 - name: Call subscription-manager
   # noqa jinja[spacing]
   community.general.redhat_subscription:
-    state: "{{ rhc_state | d('present') }}"
+    state: "{{ 'present'
+      if (rhc_state | d('present') == 'reconnect')
+      else rhc_state | d('present') }}"
     username: "{{ __rhc_fake_credential
       if (rhc_state | d('present') == 'present'
            and __rhc_subman_identity.rc == 0)
@@ -49,10 +53,9 @@
     server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
       else rhc_server.insecure | ternary('1', '0') }}"
     auto_attach: "{{ true
-      if (rhc_state | d('present') == 'present') else omit }}"
+      if (rhc_state | d('present') in ['present', 'reconnect']) else omit }}"
     release: "{{ rhc_release
-      if (rhc_state | d('present') == 'present'
-           and __rhc_subman_identity.rc == 1
+      if (rhc_state | d('present') != 'absent'
            and rhc_release != __rhc_state_absent)
       else omit }}"
     server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
@@ -83,15 +86,17 @@
       {%-   else -%}
       {{ rhc_proxy.password }}
       {%- endif %}"
+    force_register: "{{ rhc_state | d('present') == 'reconnect' }}"
 
 - name: Configure subscribed system
   when:
-    - rhc_state | d("present") == "present"
+    - rhc_state | d("present") in ["present", "reconnect"]
   block:
     - name: Set the release
       community.general.rhsm_release:
         release: "{{ rhc_release }}"
       when:
+        - rhc_state | d("present") == "present"
         - __rhc_subman_identity.rc == 0
         - rhc_release != __rhc_state_absent
 
@@ -99,6 +104,7 @@
       community.general.rhsm_release:
         release: null
       when:
+        - rhc_state | d("present") == "present"
         - __rhc_subman_identity.rc == 0
         - rhc_release == __rhc_state_absent
 

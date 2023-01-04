@@ -34,6 +34,7 @@
           port: "{{ lsr_rhc_test_data.candlepin_port }}"
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
     - name: Register insights (noop)
       include_role:
@@ -51,6 +52,7 @@
           port: "{{ lsr_rhc_test_data.candlepin_port }}"
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
     - name: Get insights UUID
       include_tasks: tasks/get_insights_uuid.yml

@@ -119,6 +119,7 @@
           port: "{{ lsr_rhc_test_data.candlepin_port }}"
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
         rhc_proxy:
           hostname: "{{ lsr_rhc_test_data.proxy_noauth_hostname }}"
           port: "{{ lsr_rhc_test_data.proxy_noauth_port }}"
@@ -276,6 +277,7 @@
           port: "{{ lsr_rhc_test_data.candlepin_port }}"
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
         rhc_proxy:
           hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
           port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
@@ -304,6 +306,7 @@
           port: "{{ lsr_rhc_test_data.candlepin_port }}"
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
         rhc_proxy: {"state":"absent"}
 
     - name: Unregister

@@ -10,6 +10,32 @@
     - name: Setup Candlepin
       import_tasks: tasks/setup_candlepin.yml
 
+    - name: Try to register using invalid credentials
+      block:
+        - name: Register (wrong username, wrong password)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_invalid_username }}"
+                password: "{{ lsr_rhc_test_data.reg_invalid_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: true
+
     - name: Register
       include_role:
         name: linux-system-roles.rhc

@@ -96,6 +96,8 @@
           candlepin_insecure: false
           reg_username: "admin"
           reg_password: "admin"
+          reg_invalid_username: "invalid-user"
+          reg_invalid_password: "invalid-password"
           reg_organization: "admin"
           baseurl: "http://localhost:8080"
           repositories:

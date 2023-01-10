@@ -53,6 +53,9 @@
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
         rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        rhc_environments: "{{ lsr_rhc_test_data.envs_register
+          if lsr_rhc_test_data.envs_register is not none
+          else omit }}"
 
     - name: Register (noop)
       include_role:
@@ -71,6 +74,9 @@
           prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
         rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        rhc_environments: "{{ lsr_rhc_test_data.envs_register
+          if lsr_rhc_test_data.envs_register is not none
+          else omit }}"
 
     - name: Get rhsm UUID
       include_tasks: tasks/get_rhsm_uuid.yml
@@ -97,6 +103,9 @@
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
         rhc_state: reconnect
         rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        rhc_environments: "{{ lsr_rhc_test_data.envs_register
+          if lsr_rhc_test_data.envs_register is not none
+          else omit }}"
 
     - name: Get rhsm UUID
       include_tasks: tasks/get_rhsm_uuid.yml

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Run subscription-manager environments --list-enabled
+  shell: |
+    set -euo pipefail
+    subscription-manager environments --list-enabled |
+    awk -F':' '/^Name/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}'
+  register: test_environments
+  changed_when: false

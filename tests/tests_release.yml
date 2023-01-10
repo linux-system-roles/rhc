@@ -34,6 +34,9 @@
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_environments: "{{ lsr_rhc_test_data.envs_register
+              if lsr_rhc_test_data.envs_register is not none
+              else omit }}"
             rhc_release: "{{ lsr_rhc_test_data.release }}"
 
         - name: Get set release
@@ -130,6 +133,9 @@
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_environments: "{{ lsr_rhc_test_data.envs_register
+              if lsr_rhc_test_data.envs_register is not none
+              else omit }}"
             rhc_release: {"state":"absent"}
 
         - name: Get set release
@@ -157,6 +163,9 @@
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_environments: "{{ lsr_rhc_test_data.envs_register
+              if lsr_rhc_test_data.envs_register is not none
+              else omit }}"
             rhc_release: "{{ lsr_rhc_test_data.release }}"
 
         - name: Get set release

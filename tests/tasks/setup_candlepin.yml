@@ -68,7 +68,7 @@
     - name: Copy product certificates
       copy:
         src: "/home/candlepin/devel/candlepin/generated_certs/{{ item }}.pem"
-        dest: "/etc/pki/product/{{ item }}.pem"
+        dest: "/etc/pki/product-default/{{ item }}.pem"
         remote_src: true
         mode: 0644
       loop:

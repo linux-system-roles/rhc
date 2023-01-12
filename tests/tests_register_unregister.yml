@@ -34,7 +34,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Register
       include_role:

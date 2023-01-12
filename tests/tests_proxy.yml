@@ -41,7 +41,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Try to register (wrong host)
       block:
@@ -71,7 +71,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Try to register (wrong port)
       block:
@@ -101,7 +101,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Register (no authentication)
       include_role:
@@ -163,7 +163,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Try to register (wrong username, wrong password)
       block:
@@ -195,7 +195,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Try to register (wrong username)
       block:
@@ -227,7 +227,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Try to register (wrong password)
       block:
@@ -259,7 +259,7 @@
       rescue:
         - name: Assert registration failed
           assert:
-            that: true
+            that: ansible_failed_result.msg != 'The above task must fail'
 
     - name: Register (authentication)
       include_role:

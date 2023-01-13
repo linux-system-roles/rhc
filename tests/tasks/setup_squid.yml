@@ -73,6 +73,18 @@
             regexp: "^http_port "
             line: "http_port {{ lsr_rhc_test_data.proxy_auth_port }}"
 
+        - name: Disable HTTP access allow
+          lineinfile:
+            path: /etc/squid/squid.conf
+            regexp: "^http_access allow (localhost|localnet)$"
+            state: absent
+
+        - name: Disable HTTP deny all
+          lineinfile:
+            path: /etc/squid/squid.conf
+            regexp: "^http_access deny all$"
+            state: absent
+
         - name: Insert auth config into configuration
           blockinfile:
             path: /etc/squid/squid.conf
@@ -80,6 +92,8 @@
             block: |
               auth_param basic program /usr/lib64/squid/basic_ncsa_auth /etc/squid/passwd
               auth_param basic realm squid realm
+              acl authenticated proxy_auth REQUIRED
+              http_access allow authenticated
             # yamllint enable rule:line-length
 
     - name: Restart squid

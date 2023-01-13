@@ -110,7 +110,7 @@
           proxy_auth_hostname: localhost
           proxy_auth_port: 3130
           proxy_auth_username: "proxyuser"
-          proxy_auth_password: "proxyuser"
+          proxy_auth_password: "proxypass"
           proxy_nonworking_hostname: "wrongproxy"
           proxy_nonworking_port: 4000
           proxy_nonworking_username: "wrong-proxyuser"

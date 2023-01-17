@@ -41,6 +41,12 @@
         content: "candlepin ALL=(ALL) NOPASSWD: ALL\n"
         mode: 0440
 
+    - name: Install needed packages
+      package:
+        name:
+          - expect
+        state: present
+
     - name: Run Candlepin install
       block:
         - name: Include candlepin role

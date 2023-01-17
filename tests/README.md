@@ -15,6 +15,9 @@ lsr_rhc_test_data:
   candlepin_insecure: 1
   reg_username: "username"
   reg_password: "password"
+  reg_activation_keys:
+    - "key1"
+    - "key2"
   reg_organization: "organization"
   baseurl: "https://base-url"
   repositories:
@@ -37,10 +40,11 @@ lsr_rhc_test_data:
 - `candlepin_prefix` is the path under which Candlepin listens to
 - `candlepin_insecure` specifies whether do not validate the Candlepin SSL
   certificate (needed usually in self-deployments)
-- `reg_username`, `reg_password` & `reg_organization` are the credentials
-  of the user to use in the vast majority of the registration tests;
-  `reg_organization` can be specified as `null` in case `reg_username` belongs
-  to only one organization
+- `reg_username`, `reg_password`, `reg_activation_keys` & `reg_organization`
+  are the credentials of the user to use in the vast majority of the
+  registration tests; `reg_organization` can be specified as `null` in case
+  `reg_username` belongs to only one organization, and only for tests in which
+  activation keys are not used
 - `baseurl` is the base URL for receiving content
 - `repositories` is a list of repositories to use in tests for content,
   and to assert for enablement/disablement; it has the same format of the

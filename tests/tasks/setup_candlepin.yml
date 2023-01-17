@@ -88,6 +88,34 @@
         remote_src: true
         mode: 0644
 
+    - name: Query for default_key activation key
+      uri:
+        url: https://localhost:8443/candlepin/owners/admin/activation_keys?name=default_key  # yamllint disable-line
+        method: GET
+        url_username: "admin"
+        url_password: "admin"
+        validate_certs: false
+      register: default_key
+
+    - name: Get pools for product 5050
+      uri:
+        url: https://localhost:8443/candlepin/owners/admin/pools?product=5050
+        method: GET
+        url_username: "admin"
+        url_password: "admin"
+        validate_certs: false
+      register: pools
+
+    - name: Add pools for product 5050 to default_key activation key
+      uri:
+        url: "https://localhost:8443/candlepin/activation_keys/{{ default_key.json[0].id }}/pools/{{ item.id }}"  # yamllint disable-line
+        method: POST
+        url_username: "admin"
+        url_password: "admin"
+        validate_certs: false
+      loop:
+        "{{ pools.json }}"
+
     - name: Set variables
       set_fact:
         lsr_rhc_test_data:
@@ -97,6 +125,8 @@
           candlepin_insecure: false
           reg_username: "admin"
           reg_password: "admin"
+          reg_activation_keys:
+            - "default_key"
           reg_invalid_username: "invalid-user"
           reg_invalid_password: "invalid-password"
           reg_organization: "admin"

@@ -44,8 +44,8 @@
       if (rhc_state | d('present') == 'present'
            and __rhc_subman_identity.rc == 0)
       else (rhc_auth.login.password | d(omit)) }}"
-    activationkey: "{{ rhc_auth.activation_keys.keys | join(',')
-      if (rhc_auth.activation_keys.keys is defined) else omit }}"
+    activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
+      if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
     org_id: "{{ rhc_organization | d(omit) }}"
     server_hostname: "{{ rhc_server.hostname | d(omit) }}"
     server_port: "{{ rhc_server.port | d(omit) }}"
@@ -53,7 +53,8 @@
     server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
       else rhc_server.insecure | ternary('1', '0') }}"
     auto_attach: "{{ true
-      if (rhc_state | d('present') in ['present', 'reconnect']) else omit }}"
+      if (rhc_state | d('present') in ['present', 'reconnect']
+          and not 'keys' in rhc_auth.activation_keys | d({})) else omit }}"
     release: "{{ rhc_release
       if (rhc_state | d('present') != 'absent'
            and rhc_release != __rhc_state_absent)

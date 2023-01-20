@@ -131,6 +131,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
             rhc_release: {"state":"absent"}
+            rhc_state: reconnect
 
         - name: Get set release
           include_tasks: tasks/get_release.yml
@@ -158,6 +159,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
             rhc_release: "{{ lsr_rhc_test_data.release }}"
+            rhc_state: reconnect
 
         - name: Get set release
           include_tasks: tasks/get_release.yml

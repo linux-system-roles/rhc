@@ -3,6 +3,7 @@
 rhc_auth: {}
 rhc_baseurl: null
 rhc_insights:
+  remediation: present
   state: present
 rhc_organization: null
 rhc_proxy: {}

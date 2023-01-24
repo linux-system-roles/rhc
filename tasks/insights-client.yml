@@ -18,3 +18,27 @@
       or "NOT" in __rhc_insights_status.stdout
       or "unregistered" in __rhc_insights_status.stdout
   register: __rhc_insights_registration_result
+
+- name: Configure remediation
+  when: rhc_insights.remediation | d("present") == "present"
+  block:
+    - name: Ensure worker and ansible packages are installed
+      package:
+        name:
+          - rhc
+          - rhc-worker-playbook
+          - ansible-core
+        state: present
+
+    - name: Enable remediation
+      systemd:
+        enabled: true
+        state: started
+        name: rhcd
+
+- name: Disable remediation
+  systemd:
+    enabled: false
+    state: stopped
+    name: rhcd
+  when: rhc_insights.remediation | d("present") == "absent"

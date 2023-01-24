@@ -110,6 +110,13 @@ Whether the system is connected to Insights; valid values are `present`
 (to ensure registration/connection), and `absent`.
 
 
+    rhc_insights:
+      remediation: present
+
+Whether the system is configured to run Insights remediation; valid values are
+`present` (to ensure remediation) and `absent`.
+
+
     rhc_proxy: {}
 
 The details of the proxy server to use for connecting:

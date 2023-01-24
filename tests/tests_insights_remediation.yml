@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Test for insights remediation enabled & disabled
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Skip when running with embedded Candlepin
+      meta: end_play
+      when:
+        - lookup('env', 'LSR_RHC_TEST_DATA') | length == 0
+      delegate_to: 127.0.0.1
+      become: false
+
+    - name: Import test data
+      include_vars:
+        file: "{{ lookup('env', 'LSR_RHC_TEST_DATA') }}"
+      delegate_to: 127.0.0.1
+      become: false
+
+    - name: Register insights and enable remediation
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_auth:
+          login:
+            username: "{{ lsr_rhc_test_data.reg_username }}"
+            password: "{{ lsr_rhc_test_data.reg_password }}"
+        rhc_insights:
+          remediation: present
+          state: present
+        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+        rhc_server:
+          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+          port: "{{ lsr_rhc_test_data.candlepin_port }}"
+          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+    - name: Get service_facts
+      service_facts:
+
+    - name: Check remediation is enabled
+      assert:
+        that:
+          - "'rhcd.service' in ansible_facts.services"
+          - ansible_facts.services['rhcd.service'].status == 'enabled'
+
+    - name: Disable remediation
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_insights:
+          remediation: absent
+
+    - name: Get service_facts
+      service_facts:
+
+    - name: Check remediation is disabled
+      assert:
+        that:
+          - "'rhcd.service' in ansible_facts.services"
+          - ansible_facts.services['rhcd.service'].status == 'disabled'
+
+    - name: Disable remediation (noop)
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_insights:
+          remediation: absent
+
+    - name: Unregister insights
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_state: absent

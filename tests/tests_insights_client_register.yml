@@ -27,6 +27,7 @@
             username: "{{ lsr_rhc_test_data.reg_username }}"
             password: "{{ lsr_rhc_test_data.reg_password }}"
         rhc_insights:
+          remediation: absent
           state: present
         rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
         rhc_server:
@@ -45,6 +46,7 @@
             username: "{{ lsr_rhc_test_data.reg_username }}"
             password: "{{ lsr_rhc_test_data.reg_password }}"
         rhc_insights:
+          remediation: absent
           state: present
         rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
         rhc_server:
@@ -69,6 +71,8 @@
           login:
             username: "{{ lsr_rhc_test_data.reg_username }}"
             password: "{{ lsr_rhc_test_data.reg_password }}"
+        rhc_insights:
+          remediation: absent
         rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
         rhc_server:
           hostname: "{{ lsr_rhc_test_data.candlepin_host }}"

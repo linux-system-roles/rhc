@@ -115,6 +115,32 @@
       vars:
         rhc_state: absent
 
+    - name: Try to register using activation key with missing org
+      block:
+        - name: Register (activation key, missing org)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              activation_keys:
+                keys: "{{ lsr_rhc_test_data.reg_activation_keys }}"
+            rhc_insights:
+              state: absent
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+              rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
     - name: Register (using activation keys)
       include_role:
         name: linux-system-roles.rhc

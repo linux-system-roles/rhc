@@ -1,5 +1,6 @@
+---
 # yamllint disable rule:line-length
-name: Tag, release, and publish role
+name: Tag, release, and publish role based on CHANGELOG.md push
 on:  # yamllint disable-line rule:truthy
   push:
     branches:

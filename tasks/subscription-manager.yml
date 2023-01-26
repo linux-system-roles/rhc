@@ -88,6 +88,9 @@
       {{ rhc_proxy.password }}
       {%- endif %}"
     force_register: "{{ rhc_state | d('present') == 'reconnect' }}"
+    environment: "{{ rhc_environments | join(',')
+      if (rhc_environments | length > 0
+          and rhc_state | d('present') != 'absent') else omit }}"
 
 - name: Configure subscribed system
   when:

@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Basic repository enablement/disablement test
+  hosts: all
+  gather_facts: true
+  become: true
+  tags:
+    - tests::slow
+  tasks:
+    - name: Setup Candlepin
+      import_tasks: tasks/setup_candlepin.yml
+      vars:
+        environments: true
+
+    - name: Skip if no test environments are set
+      meta: end_play
+      when:
+        - >-
+          lsr_rhc_test_data.envs_register is none
+          or lsr_rhc_test_data.envs_register | d([]) | length == 0
+
+    - name: Try to register (wrong environment)
+      block:
+        - name: Register (wrong environment)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_environments:
+              - "{{ lsr_rhc_test_data.env_nonworking }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Test environments on registration
+      block:
+        - name: Register (with existing environments)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_environments: "{{ lsr_rhc_test_data.envs_register }}"
+
+        # 'subscription-manager environments' has a '--list' option only
+        # in RHEL 8.6+ and greater (incl. RHEL 9+)
+        - name: Check the enabled environments
+          when:
+            - >-
+              ansible_distribution not in ["CentOS", "RedHat"]
+              or ansible_distribution_major_version | int >= 8
+          block:
+            - name: Get enabled environments
+              include_tasks: tasks/list_environments.yml
+
+            - name: Check environments to enable are enabled
+              assert:
+                that:
+                  - >-
+                    (lsr_rhc_test_data.envs_register | sort) ==
+                    (test_environments.stdout_lines | sort)
+
+      always:
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent

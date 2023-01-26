@@ -137,6 +137,13 @@ rhc_proxy:
 Use `{"state":"absent"}` to reset all the proxy configurations to empty
 (effectively disabling the proxy server).
 
+    rhc_environments: []
+
+The list of environments to which register to when connecting the system.
+
+*NB*: this only works when the system is being connected from an unconnected
+state -- it cannot change the environments of already connected systems.
+
 ## Dependencies
 
 None.

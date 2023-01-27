@@ -122,6 +122,25 @@
       loop:
         "{{ pools.json }}"
 
+    - name: Configure environments
+      when: environments | d(false)
+      block:
+        - name: Add environments
+          uri:
+            url: https://localhost:8443/candlepin/owners/admin/environments
+            method: POST
+            url_username: "admin"
+            url_password: "admin"
+            validate_certs: false
+            body_format: json
+            body:
+              name: "{{ item.name }}"
+              description: "{{ item.desc }}"
+              id: "{{ item.id }}"
+          loop:
+            - {name: "Environment 1", desc: "The environment 1", id: "envId1"}
+            - {name: "Environment 2", desc: "The environment 2", id: "envId2"}
+
     - name: Set variables
       set_fact:
         lsr_rhc_test_data:
@@ -151,6 +170,9 @@
           proxy_nonworking_port: 4000
           proxy_nonworking_username: "wrong-proxyuser"
           proxy_nonworking_password: "wrong-proxypassword"
+          envs_register:
+            - "Environment 2"
+          env_nonworking: "Ceci n'est pas une environment"
         cacheable: true
 
 - name: Check Candlepin works

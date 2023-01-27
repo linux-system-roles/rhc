@@ -34,6 +34,9 @@ lsr_rhc_test_data:
   proxy_nonworking_port: invalid-port
   proxy_nonworking_username: "wrong-username"
   proxy_nonworking_password: "wrong-password"
+  envs_register:
+    - "Environment 1"
+  env_nonworking: "not-a-valid-environment"
 ```
 
 - `candlepin_host` & `candlepin_port` are the hostname & the port of Candlepin
@@ -60,6 +63,10 @@ lsr_rhc_test_data:
    - `proxy_nonworking_hostname`, `proxy_nonworking_port`,
      `proxy_nonworking_username` & `proxy_nonworking_password` are wrong details
      of proxy server configuration bits
+- `envs_register` is a list of working environments to use when registering a
+  system, and there must be at least one; if environments are not supported or
+  enabled in the Candlepin instance, this needs to be set to `null`
+- `env_nonworking` is an environment that does not exist
 
 To use this custom configuration, set the `LSR_RHC_TEST_DATA` environment
 variable to the full path of that file.

@@ -6,6 +6,7 @@ rhc_environments: []
 rhc_insights:
   remediation: present
   state: present
+  tags: {}
 rhc_organization: null
 rhc_proxy: {}
 rhc_release: null

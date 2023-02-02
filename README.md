@@ -116,6 +116,29 @@ Whether the system is connected to Insights; valid values are `present`
 Whether the system is configured to run Insights remediation; valid values are
 `present` (to ensure remediation) and `absent`.
 
+    rhc_insights:
+      tags: {}
+
+A dictionary of tags that is added to the system record in Host Based Inventory (HBI).
+Used to search for hosts. This tags has keys and values. Values for each key can be any 
+data type. Posible values of `tags` parameter:
+- `tags` is `null` or an empty value (e.g: `{}`) does not change the tags file content.
+- `tags` is `{state: absent}` remove all the tags by removing the file.
+- `tags` is non-empty, create the file with the specified tags
+
+An example of the tags configured in the `insights-client` [documentation](https://access.redhat.com/documentation/en-us/red_hat_insights/2022/html/client_configuration_guide_for_red_hat_insights/con-insights-client-tagging-overview_insights-cg-adding-tags):
+
+```yaml
+rhc_insights:
+  tags:
+    group: _group-name-value_
+    location: _location-name-value_
+    description:
+      - RHEL8
+      - SAP
+    key 4: value
+```
+
 
     rhc_proxy: {}
 

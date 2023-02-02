@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Get state of insights tag file
+  stat:
+    path: /etc/insights-client/tags.yml
+  register: test_insights_tags

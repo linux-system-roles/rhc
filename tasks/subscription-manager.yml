@@ -115,7 +115,7 @@
     - name: Configure repositories
       community.general.rhsm_repository:
         name: "{{ item.name }}"
-        state: "{{ item.state }}"
+        state: "{{ item.state | d('enabled') }}"
         purge: false
       loop: "{{ rhc_repositories }}"
       when:

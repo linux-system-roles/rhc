@@ -74,6 +74,27 @@
             that:
               - test_repositories.stdout_lines | length == 0
 
+        - name: Enable repo on already registered system
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_insights:
+              state: absent
+            rhc_repositories:
+              - "{{ lsr_rhc_test_data.repositories.0 }}"
+
+        - name: Get enabled repositories
+          include_tasks: tasks/list_repositories.yml
+          vars:
+            mode: list-enabled
+
+        - name: Verify that repository is enabled
+          assert:
+            that: >
+              lsr_rhc_test_data.repositories.0.name in
+              test_repositories.stdout_lines
+
+
       always:
         - name: Unregister
           include_role:

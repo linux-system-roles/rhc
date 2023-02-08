@@ -4,6 +4,7 @@ rhc_auth: {}
 rhc_baseurl: null
 rhc_environments: []
 rhc_insights:
+  autoupdate: true
   remediation: present
   state: present
   tags: {}

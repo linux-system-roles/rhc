@@ -111,6 +111,12 @@ Whether the system is connected to Insights; valid values are `present`
 
 
     rhc_insights:
+      autoupdate: true
+
+Whether the system automatically updates the dynamic configuration. By default is
+`true`.
+
+    rhc_insights:
       remediation: present
 
 Whether the system is configured to run Insights remediation; valid values are

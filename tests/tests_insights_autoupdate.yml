@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Basic insights autoupdate test
+  hosts: all
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Skip when running with embedded Candlepin
+      meta: end_play
+      when:
+        - lookup('env', 'LSR_RHC_TEST_DATA') | length == 0
+      delegate_to: 127.0.0.1
+      become: false
+
+    - name: Import test data
+      include_vars:
+        file: "{{ lookup('env', 'LSR_RHC_TEST_DATA') }}"
+      delegate_to: 127.0.0.1
+      become: false
+
+    - name: Test autoupdate
+      block:
+        - name: Add autoupdate and register insights
+          include_role:
+            name: linux-system-roles.rhc
+            public: true
+          vars:
+            rhc_insights:
+              autoupdate: true
+              remediation: absent
+              state: present
+
+        - name: Check that auto_update is true in config file
+          command:
+            grep -ixq "^auto_update=true" {{ __rhc_insights_conf }}
+          changed_when: false
+
+        - name: Disable autoupdate
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_insights:
+              autoupdate: false
+              remediation: absent
+
+        - name: Disable autoupdate (noop)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_insights:
+              autoupdate: false
+              remediation: absent
+
+        - name: Check that auto_update is false in config file
+          command:
+            grep -ixq "^auto_update=false" {{ __rhc_insights_conf }}
+          changed_when: false
+
+      always:
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent

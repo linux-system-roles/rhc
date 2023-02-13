@@ -16,3 +16,5 @@ __rhc_fake_credential: "this-is-not-a-credential!"
 
 # empty string, used in case a variable is needed for an empty string
 __rhc_empty_string: ""
+
+__rhc_insights_conf: "/etc/insights-client/insights-client.conf"

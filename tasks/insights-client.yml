@@ -29,6 +29,13 @@
   when:
     - rhc_insights.tags | d(None) == __rhc_state_absent
 
+- name: Configure autoupdate
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^auto_update"
+    insertafter: "#auto_update"
+    line: auto_update={{ rhc_insights.autoupdate | d(true) | bool }}
+
 - name: Register insights-client
   command: insights-client --register
   when:

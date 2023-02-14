@@ -6,10 +6,11 @@
   when: not ansible_facts.keys() | list |
     intersect(__rhc_required_facts) == __rhc_required_facts
 
-- name: Check if insights-client is installed
+- name: Check if insights-packages are installed
   package_facts:
   when:
     - ansible_distribution == "RedHat"
     - >-
       rhc_insights.state | d("present") == "absent"
       or rhc_state | d("present") in ["absent", "reconnect"]
+      or rhc_insights.remediation | d("present") == "absent"

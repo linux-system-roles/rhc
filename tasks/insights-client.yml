@@ -77,4 +77,6 @@
     enabled: false
     state: stopped
     name: rhcd
-  when: rhc_insights.remediation | d("present") == "absent"
+  when:
+    - rhc_insights.remediation | d("present") == "absent"
+    - '"rhc" in ansible_facts.packages'

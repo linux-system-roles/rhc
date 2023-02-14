@@ -43,7 +43,7 @@
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
         - name: Get state of insights tags.yml file
-          include_tasks: get_insights_tags.yml
+          include_tasks: tasks/get_insights_tags.yml
 
         - name: Rename the tags to test_insights_tags_modified
           set_fact:
@@ -65,7 +65,7 @@
                   - rhc
 
         - name: Get state of insights tags.yml file
-          include_tasks: get_insights_tags.yml
+          include_tasks: tasks/get_insights_tags.yml
 
         - name: Rename the tags to test_insights_tags_modified
           set_fact:
@@ -79,9 +79,12 @@
         - name: Do nothing
           include_role:
             name: linux-system-roles.rhc
+          vars:
+            rhc_insights:
+              remediation: absent
 
         - name: Get state of insights tags.yml file
-          include_tasks: get_insights_tags.yml
+          include_tasks: tasks/get_insights_tags.yml
 
         - name: Check if tags.yml file exists and its size is the same
           assert:
@@ -98,7 +101,7 @@
                 state: absent
 
         - name: Get state of insights tags.yml file
-          include_tasks: get_insights_tags.yml
+          include_tasks: tasks/get_insights_tags.yml
 
         - name: Check that insights tags.yml file does not exists
           assert:

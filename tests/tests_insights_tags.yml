@@ -45,13 +45,13 @@
         - name: Get state of insights tags.yml file
           include_tasks: tasks/get_insights_tags.yml
 
-        - name: Rename the tags to test_insights_tags_modified
+        - name: Rename the tags to test_tags_modified
           set_fact:
-            test_insights_tags_new: "{{ test_insights_tags }}"
+            test_tags_new: "{{ test_tags }}"
 
         - name: Check if tags.yml file exists and its size is > 0
           assert:
-            that: test_insights_tags_new.stat.size > 0
+            that: test_tags_new.stat.size > 0
 
         - name: Change tags
           include_role:
@@ -67,14 +67,14 @@
         - name: Get state of insights tags.yml file
           include_tasks: tasks/get_insights_tags.yml
 
-        - name: Rename the tags to test_insights_tags_modified
+        - name: Rename the tags to test_tags_chg
           set_fact:
-            test_insights_tags_modified: "{{ test_insights_tags.stat.size }}"
+            test_tags_chg: "{{ test_tags }}"
 
         - name: Check if tags.yml file exists and its size has changed
           assert:
             that:
-              - test_insights_tags_new.stat.size != test_insights_tags_modified
+              - test_tags_new.stat.size != test_tags_chg.stat.size
 
         - name: Do nothing
           include_role:
@@ -89,7 +89,7 @@
         - name: Check if tags.yml file exists and its size is the same
           assert:
             that:
-              - test_insights_tags.stat.size == test_insights_tags_modified
+              - test_tags.stat.size == test_tags_chg.stat.size
 
         - name: Remove all tags
           include_role:
@@ -105,7 +105,7 @@
 
         - name: Check that insights tags.yml file does not exists
           assert:
-            that: test_insights_tags is undefined
+            that: not test_tags.stat.exists
 
       always:
         - name: Unregister

@@ -37,7 +37,7 @@
     line: auto_update={{ rhc_insights.autoupdate | d(true) | bool }}
 
 - name: Register insights-client
-  command: insights-client --register
+  shell: insights-client --register & wait
   when:
     - >-
       rhc_state | d("present") == "reconnect"
@@ -46,7 +46,7 @@
   register: __rhc_insights_registration_result
 
 - name: Do the collection if insights-client was registered
-  command: insights-client
+  shell: insights-client & wait
   when:
     - >-
       "This host is registered" in __rhc_insights_status.stdout

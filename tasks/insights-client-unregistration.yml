@@ -4,7 +4,7 @@
   include_tasks: check-insights-status.yml
 
 - name: Unregister insights-client
-  command: insights-client --unregister
+  shell: insights-client --unregister & wait
   when:
     - >-
       "This host is registered" in __rhc_insights_status.stdout

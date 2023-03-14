@@ -1,12 +1,21 @@
 # rhc
 ![rhc](https://github.com/linux-system-roles/template/workflows/tox/badge.svg)
 
-An ansible role which registers/connects RHEL systems to Red Hat.
+An ansible role which connects RHEL systems to Red Hat.
 
 ## Requirements
 
-subscription-manager and insights-client. Both are available from the standard
-RHEL repositories, and subscription-manager is installed by default.
+The role requires subscription-manager, which is available from the standard
+RHEL repositories, and usually installed by default on RHEL. On other
+distributions it will be installed if not already.
+
+The role requires also insights-client, which is available from the standard
+RHEL repositories, in case the Insights support is enabled (and it is by
+default).
+
+In addition, the role requires rhc, which is available from the standard RHEL
+repositories, in case the Insights remediation is enabled (and it is by
+default).
 
 The role requires modules from `community.general`.  If you are using
 `ansible-core`, you must install the `community.general` collection.  Use the
@@ -19,23 +28,29 @@ includes these collections/modules, you should have to do nothing.
 
 ## Role Variables
 
+```yaml
     rhc_state: present
+```
 
 Whether the system is connected to Red Hat; valid values are `present`
-(to ensure registration/connection), `absent`, and `reconnect`.
+(the default, to ensure connection), `absent`, and `reconnect`.
 
-When using `reconnect`, the system will be unregistered/disconnected in case
-it was already registered/connected; because of this, the role will always
-report a "changed" status.
+When using `reconnect`, the system will be first disconnected in case
+it was already connected; because of this, the role will always report a
+"changed" status.
 
+```yaml
     rhc_organization: "your-organization"
+```
 
-The organization of the user. This *must* be specified when registering if
+The organization of the user. This *must* be specified when connecting if
 either:
 - the user belongs to more than one organization
 - using activation keys (see `rhc_auth` below)
 
+```yaml
     rhc_auth: {}
+```
 
 The authentication method used to connect a system. This must be specified
 in case a system may need to connect (e.g. in case it was not before).
@@ -47,16 +62,18 @@ they ought to be secured. We recommend the usage of Ansible Vault as source
 for them. The references below only describe which keys exists and what they
 are for.
 
-For username/password, authentication, specify the `login` dictionary:
+For authenticating using username & password, specify the `login` dictionary
+using the following mandatory keys:
 ```yaml
 rhc_auth:
   login:
     username: "your-username"
     password: "your-password"
 ```
+using `rhc_organization` if needed.
 
-For activation keys authentication, specify the `activation_keys` dictionary,
-together with `rhc_organization`:
+For authenticating using activation keys, specify the `activation_keys`
+dictionary using the following mandatory keys, together with `rhc_organization`:
 ```yaml
 rhc_auth:
   activation_keys:
@@ -64,76 +81,101 @@ rhc_auth:
 rhc_organization: "your-organization"
 ```
 
+```yaml
     rhc_server: {}
+```
 
-The details of the registration server to connect to:
+The details of the registration server to connect to; it can contain the
+following optional keys:
 ```yaml
 rhc_server:
-  hostname: "registration-hostname"
+  hostname: "hostname"
   port: 443
-  prefix: "registration-server-prefix"
+  prefix: "server-prefix"
   insecure: false
 ```
-- `hostname` is the hostname of the registration server
+- `hostname` is the hostname of the server
 - `port` is the port to which connect to on the server
-- `prefix` is the prefix (starting with `/`) for the API calls to the
-  registration server
+- `prefix` is the prefix (starting with `/`) for the API calls to the server
 - `insecure` specifies whether to disable the validation of the SSL certificate
-  of the registration server
+  of the server
 
+```yaml
     rhc_baseurl: ""
+```
 
 The base URL for receiving content from the subscription server.
 
+```yaml
     rhc_repositories: []
+```
 
-A list with repositories to enable or disable in the system. Each item
-is a dict containing two keys:
-- `name` represents the name of a repository
-- `state` is the state of it in the system, can be `enabled` or `disabled`
+A list of repositories to enable or disable in the system. Each item is a
+dictionary containing two keys:
+- `name` is the name of a repository; this keys is mandatory
+- `state` is the state of that repository in the system, and it can be `enabled`
+  or `disabled`; this key is optional, and `enabled` if not specified
 ```yaml
 rhc_repositories:
-  - {name: "repo1", state: enabled}
-  - {name: "repo2", state: disabled}
+  - {name: "repository-1", state: enabled}
+  - {name: "repository-2", state: disabled}
 ```
 
+```yaml
     rhc_release: "release"
-
-A release to set for the system. Use `{"state":"absent"}` to actually unset the
-release set for the system.
 ```
-rhc_insights:
-  state: present
+
+A release to set for the system. Typically used for locking a RHEL system to
+a certain minor version of RHEL.
+
+Use `{"state":"absent"}` (and not `""`) to actually unset the release set for
+the system.
+
+```yaml
+    rhc_insights:
+      state: present
 ```
 
 Whether the system is connected to Insights; valid values are `present`
-(to ensure registration/connection), and `absent`.
+(the default, to ensure connection), and `absent`.
 
-
+```yaml
     rhc_insights:
       autoupdate: true
+```
 
-Whether the system automatically updates the dynamic configuration. By default is
-`true`.
+Whether the system automatically updates the dynamic configuration. It is
+enabled by default.
 
+```yaml
     rhc_insights:
       remediation: present
+```
 
-Whether the system is configured to run Insights remediation; valid values are
-`present` (to ensure remediation) and `absent`.
+Whether the system is configured to run the Insights remediation; valid values
+are `present` (the default, to ensure remediation), and `absent`.
 
+```yaml
     rhc_insights:
       tags: {}
+```
 
-A dictionary of tags that is added to the system record in Host Based Inventory (HBI).
-Used to search for hosts. This tags has keys and values. Values for each key can be any 
-data type. Posible values of `tags` parameter:
-- `tags` is `null` or an empty value (e.g: `{}`) does not change the tags file content.
-- `tags` is `{state: absent}` remove all the tags by removing the file.
-- `tags` is non-empty, create the file with the specified tags
+A dictionary of tags that is added to the system record in Host Based Inventory
+(HBI); typically used for the grouping and tagging of systems, and to search
+for systems in the inventory.
 
-An example of the tags configured in the `insights-client` [documentation](https://access.redhat.com/documentation/en-us/red_hat_insights/2022/html/client_configuration_guide_for_red_hat_insights/con-insights-client-tagging-overview_insights-cg-adding-tags):
+Possible values of this variable:
+- `null` or an empty value (e.g.: `{}`): the tags file content is not changed
+- `{state: absent}`: all the tags are removed (by removing the tags file)
+- any other value: the file is created with the specified tags
 
+Since the tags are arbitrary values for the tagging of systems, there is no
+fixed format. In the specified dictionary, the keys are strings, and the type
+of the values can be any data type (strings, numbers, lists, dictionaries,
+etc).
+
+Example of the tags configured in the `insights-client`
+[documentation](https://access.redhat.com/documentation/en-us/red_hat_insights/2023/html/client_configuration_guide_for_red_hat_insights/con-insights-client-tagging-overview_insights-cg-adding-tags):
 ```yaml
 rhc_insights:
   tags:
@@ -145,8 +187,9 @@ rhc_insights:
     key 4: value
 ```
 
-
+```yaml
     rhc_proxy: {}
+```
 
 The details of the proxy server to use for connecting:
 ```yaml
@@ -166,12 +209,21 @@ rhc_proxy:
 Use `{"state":"absent"}` to reset all the proxy configurations to empty
 (effectively disabling the proxy server).
 
+**NB**: the variables used for the authentication on the proxy server are
+considered secrets, and thus they ought to be secured. We recommend the usage
+of Ansible Vault as source for them.
+
+```yaml
     rhc_environments: []
+```
 
 The list of environments to which register to when connecting the system.
 
-*NB*: this only works when the system is being connected from an unconnected
-state -- it cannot change the environments of already connected systems.
+*NB*:
+- this only works when the system is being connected from an unconnected state
+  -- it cannot change the environments of already connected systems
+- this requires the environments to be enabled on the registration server;
+  in Red Hat Satellite or Katello, this feature is called "Content Views"
 
 ## Dependencies
 
@@ -179,8 +231,8 @@ None.
 
 ## Example Playbooks
 
-Simple Registration to Red Hat including Insights, assuming authentication
-using username & password:
+Ensure the connection to Red Hat including Insights, authenticating using
+username & password:
 
 ```yaml
 - hosts: all
@@ -204,6 +256,29 @@ Ensure that certain RHEL 9 repositories are enabled, and another one is not:
       - {name: "rhel-9-for-x86_64-baseos-rpms", state: enabled}
       - {name: "rhel-9-for-x86_64-appstream-rpms", state: enabled}
       - {name: "codeready-builder-for-rhel-9-x86_64-rpms", state: disabled}
+  roles:
+    - linux-system-roles.rhc
+```
+
+Ensure that a RHEL 8 system is locked on RHEL 8.6:
+
+```yaml
+- hosts: all
+  vars:
+    rhc_release: 8.6
+  roles:
+    - linux-system-roles.rhc
+```
+
+Ensure that a system is connected to Insights, without optional features such
+as automatic updates and remediation:
+
+```yaml
+- hosts: all
+  vars:
+    rhc_insights:
+      autoupdate: false
+      remediation: absent
   roles:
     - linux-system-roles.rhc
 ```

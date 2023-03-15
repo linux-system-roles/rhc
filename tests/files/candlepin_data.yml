@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+---
+lsr_rhc_test_data:
+  candlepin_host: localhost
+  candlepin_port: 8443
+  candlepin_prefix: /candlepin
+  candlepin_insecure: false
+  reg_username: "admin"
+  reg_password: "admin"
+  reg_activation_keys:
+    - "default_key"
+  reg_invalid_username: "invalid-user"
+  reg_invalid_password: "invalid-password"
+  reg_organization: "admin"
+  baseurl: "http://localhost:8080"
+  repositories:
+    - {name: "admin-content-label-5051", state: enabled}
+    - {name: "content-label-32060", state: disabled}
+  release: null  # no releases in Candlepin test data
+  proxy_noauth_hostname: localhost
+  proxy_noauth_port: 3128
+  proxy_auth_hostname: localhost
+  proxy_auth_port: 3130
+  proxy_auth_username: "proxyuser"
+  proxy_auth_password: "proxypass"
+  proxy_nonworking_hostname: "wrongproxy"
+  proxy_nonworking_port: 4000
+  proxy_nonworking_username: "wrong-proxyuser"
+  proxy_nonworking_password: "wrong-proxypassword"
+  envs_register:
+    - "Environment 2"
+  env_nonworking: "Ceci n'est pas une environment"

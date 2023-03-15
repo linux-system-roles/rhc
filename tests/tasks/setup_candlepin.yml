@@ -1,17 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Get LSR_RHC_TEST_DATA environment variable
-  set_fact:
-    lsr_rhc_test_data_file: "{{ lookup('env', 'LSR_RHC_TEST_DATA') }}"
-  delegate_to: 127.0.0.1
-  become: false
-
-- name: Import test data
-  include_vars:
-    file: "{{ lsr_rhc_test_data_file }}"
-  when: lsr_rhc_test_data_file | length > 0
-  delegate_to: 127.0.0.1
-  become: false
+- name: Setup the test data
+  import_tasks: setup_test_data.yml
 
 - name: Deploy Candlepin
   when: lsr_rhc_test_data_file | length == 0
@@ -21,6 +11,10 @@
       when:
         - ansible_distribution in ["CentOS", "RedHat"]
         - ansible_distribution_major_version | int > 8
+
+    - name: Set helper fact for Candlepin base URL
+      set_fact:
+        _cp_url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
 
     - name: Clone ansible-role-candlepin repo
       git:
@@ -83,7 +77,7 @@
 
     - name: Install GPG key for RPM repositories
       get_url:
-        url: http://localhost:8080/RPM-GPG-KEY-candlepin
+        url: "http://{{ lsr_rhc_test_data.candlepin_host }}:8080/RPM-GPG-KEY-candlepin"  # yamllint disable-line
         dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
         mode: 0644
 
@@ -96,28 +90,28 @@
 
     - name: Query for default_key activation key
       uri:
-        url: https://localhost:8443/candlepin/owners/admin/activation_keys?name=default_key  # yamllint disable-line
+        url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/activation_keys?name={{ lsr_rhc_test_data.reg_activation_keys[0] }}"  # yamllint disable-line
         method: GET
-        url_username: "admin"
-        url_password: "admin"
+        url_username: "{{ lsr_rhc_test_data.reg_username }}"
+        url_password: "{{ lsr_rhc_test_data.reg_password }}"
         validate_certs: false
       register: default_key
 
     - name: Get pools for product 5050
       uri:
-        url: https://localhost:8443/candlepin/owners/admin/pools?product=5050
+        url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/pools?product=5050"  # yamllint disable-line
         method: GET
-        url_username: "admin"
-        url_password: "admin"
+        url_username: "{{ lsr_rhc_test_data.reg_username }}"
+        url_password: "{{ lsr_rhc_test_data.reg_password }}"
         validate_certs: false
       register: pools
 
     - name: Add pools for product 5050 to default_key activation key
       uri:
-        url: "https://localhost:8443/candlepin/activation_keys/{{ default_key.json[0].id }}/pools/{{ item.id }}"  # yamllint disable-line
+        url: "{{ _cp_url }}/activation_keys/{{ default_key.json[0].id }}/pools/{{ item.id }}"  # yamllint disable-line
         method: POST
-        url_username: "admin"
-        url_password: "admin"
+        url_username: "{{ lsr_rhc_test_data.reg_username }}"
+        url_password: "{{ lsr_rhc_test_data.reg_password }}"
         validate_certs: false
       loop:
         "{{ pools.json }}"
@@ -127,10 +121,10 @@
       block:
         - name: Add environments
           uri:
-            url: https://localhost:8443/candlepin/owners/admin/environments
+            url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/environments"  # yamllint disable-line
             method: POST
-            url_username: "admin"
-            url_password: "admin"
+            url_username: "{{ lsr_rhc_test_data.reg_username }}"
+            url_password: "{{ lsr_rhc_test_data.reg_password }}"
             validate_certs: false
             body_format: json
             body:
@@ -141,42 +135,5 @@
             - {name: "Environment 1", desc: "The environment 1", id: "envId1"}
             - {name: "Environment 2", desc: "The environment 2", id: "envId2"}
 
-    - name: Set variables
-      set_fact:
-        lsr_rhc_test_data:
-          candlepin_host: localhost
-          candlepin_port: 8443
-          candlepin_prefix: /candlepin
-          candlepin_insecure: false
-          reg_username: "admin"
-          reg_password: "admin"
-          reg_activation_keys:
-            - "default_key"
-          reg_invalid_username: "invalid-user"
-          reg_invalid_password: "invalid-password"
-          reg_organization: "admin"
-          baseurl: "http://localhost:8080"
-          repositories:
-            - {name: "admin-content-label-5051", state: enabled}
-            - {name: "content-label-32060", state: disabled}
-          release: null  # no releases in Candlepin test data
-          proxy_noauth_hostname: localhost
-          proxy_noauth_port: 3128
-          proxy_auth_hostname: localhost
-          proxy_auth_port: 3130
-          proxy_auth_username: "proxyuser"
-          proxy_auth_password: "proxypass"
-          proxy_nonworking_hostname: "wrongproxy"
-          proxy_nonworking_port: 4000
-          proxy_nonworking_username: "wrong-proxyuser"
-          proxy_nonworking_password: "wrong-proxypassword"
-          envs_register:
-            - "Environment 2"
-          env_nonworking: "Ceci n'est pas une environment"
-        cacheable: true
-
 - name: Check Candlepin works
-  uri:
-    url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
-    method: HEAD
-    validate_certs: false
+  import_tasks: check_candlepin.yml

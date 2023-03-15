@@ -7,13 +7,18 @@
   tags:
     - tests::slow
   tasks:
-    - name: Setup Candlepin
-      import_tasks: tasks/setup_candlepin.yml
+    # A local Candlepin deployment has no concept of "releases",
+    # so only setup the test data.
+    - name: Setup test data
+      import_tasks: tasks/setup_test_data.yml
 
     - name: Skip if no test release is set
       meta: end_play
       when:
         - lsr_rhc_test_data.release | d(none) is none
+
+    - name: Check Candlepin works
+      import_tasks: tasks/check_candlepin.yml
 
     - name: Test release
       block:

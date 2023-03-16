@@ -4,3 +4,4 @@ collections:
   - name: community.general
   - name: community.mysql
   - name: community.postgresql
+  - name: fedora.linux_system_roles

@@ -37,6 +37,7 @@ lsr_rhc_test_data:
   envs_register:
     - "Environment 1"
   env_nonworking: "not-a-valid-environment"
+  insights: false
 ```
 
 - `candlepin_host` & `candlepin_port` are the hostname & the port of Candlepin
@@ -67,6 +68,8 @@ lsr_rhc_test_data:
   system, and there must be at least one; if environments are not supported or
   enabled in the Candlepin instance, this needs to be set to `null`
 - `env_nonworking` is an environment that does not exist
+- `insights` specifies whether Insights works with the specified
+  `candlepin_host`
 
 To use this custom configuration, set the `LSR_RHC_TEST_DATA` environment
 variable to the full path of that file.

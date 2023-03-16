@@ -30,3 +30,4 @@ lsr_rhc_test_data:
   envs_register:
     - "Environment 2"
   env_nonworking: "Ceci n'est pas une environment"
+  insights: false  # no Insights with own Candlepin deployment

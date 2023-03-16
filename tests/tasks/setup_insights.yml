@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+---
+# A local Candlepin deployment has no Insights support,
+# so only setup the test data.
+- name: Setup test data
+  import_tasks: tasks/setup_test_data.yml
+
+- name: Skip if there is no Insights support
+  meta: end_play
+  when:
+    - not lsr_rhc_test_data.insights
+
+- name: Check Candlepin works
+  import_tasks: tasks/check_candlepin.yml

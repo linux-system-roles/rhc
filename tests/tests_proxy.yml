@@ -6,12 +6,31 @@
   become: true
   tags:
     - tests::slow
+  vars:
+    __proxy_port_list:
+      - "{{ lsr_rhc_test_data.proxy_noauth_port }}"
+      - "{{ lsr_rhc_test_data.proxy_auth_port }}"
+      - "{{ lsr_rhc_test_data.proxy_nonworking_port }}"
   tasks:
     - name: Setup Candlepin
       import_tasks: tasks/setup_candlepin.yml
 
     - name: Setup Squid
       import_tasks: tasks/setup_squid.yml
+
+    # The test proxy uses non-standard ports which are not
+    # in the default SELinux policy, so add them, and remove
+    # them at the end of the test
+    - name: Add SELinux policy for proxy ports
+      include_role:
+        name: fedora.linux_system_roles.selinux
+      vars:
+        selinux_ports:
+          - ports: "{{ __proxy_port_list }}"
+            proto: tcp
+            setype: squid_port_t
+            state: present
+            local: true
 
     - name: Try to register (wrong host, wrong port)
       block:
@@ -314,3 +333,14 @@
         name: linux-system-roles.rhc
       vars:
         rhc_state: absent
+
+    - name: Remove SELinux policy for proxy ports
+      include_role:
+        name: fedora.linux_system_roles.selinux
+      vars:
+        selinux_ports:
+          - ports: "{{ __proxy_port_list }}"
+            proto: tcp
+            setype: squid_port_t
+            state: absent
+            local: true

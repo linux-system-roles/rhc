@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.1.1] - 2023-03-16
+--------------------
+
+### Bug Fixes
+
+- README: improve the role documentation a bit (#76)
+- workaround insights-client issue with /usr/bin/python
+
+### Other Changes
+
+- tests: refactor Candlepin setup (#75)
+- tests: do not deploy Candlepin in tests_release (#78)
+- add and remove selinux ports for proxy access
+- tests: refactor Insights setup (#80)
+
 [1.1.0] - 2023-02-15
 --------------------
 

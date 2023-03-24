@@ -87,9 +87,17 @@
       include_role:
         name: linux-system-roles.rhc
       vars:
-        rhc_state: absent
+        rhc_insights:
+          state: absent
 
     - name: Unregister insights (noop)
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_insights:
+          state: absent
+
+    - name: Unregister System
       include_role:
         name: linux-system-roles.rhc
       vars:

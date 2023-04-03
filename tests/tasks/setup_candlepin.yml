@@ -50,6 +50,7 @@
             cp_configure_mariadb: false
             cp_configure_ruby: false
             cp_deploy_args: "-g -a -f -t -r"
+            cp_git_ref: 9263a30b1612a22ec00ae05bd7d9ed6e0cdedbaf
 
     - name: Enable tomcat
       service:

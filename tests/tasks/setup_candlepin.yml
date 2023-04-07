@@ -89,13 +89,26 @@
         remote_src: true
         mode: 0644
 
+    - name: Copy Candlepin CA certificate for system
+      copy:
+        src: /etc/candlepin/certs/candlepin-ca.crt
+        dest: /etc/pki/ca-trust/source/anchors/candlepin-ca.pem
+        remote_src: true
+        mode: 0644
+
+    - name: Update system certificates store
+      command:
+        argv:
+          - update-ca-trust
+          - extract
+      changed_when: false
+
     - name: Query for default_key activation key
       uri:
         url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/activation_keys?name={{ lsr_rhc_test_data.reg_activation_keys[0] }}"  # yamllint disable-line
         method: GET
         url_username: "{{ lsr_rhc_test_data.reg_username }}"
         url_password: "{{ lsr_rhc_test_data.reg_password }}"
-        validate_certs: false
       register: default_key
 
     - name: Get pools for product 5050
@@ -104,7 +117,6 @@
         method: GET
         url_username: "{{ lsr_rhc_test_data.reg_username }}"
         url_password: "{{ lsr_rhc_test_data.reg_password }}"
-        validate_certs: false
       register: pools
 
     - name: Add pools for product 5050 to default_key activation key
@@ -113,7 +125,6 @@
         method: POST
         url_username: "{{ lsr_rhc_test_data.reg_username }}"
         url_password: "{{ lsr_rhc_test_data.reg_password }}"
-        validate_certs: false
       loop:
         "{{ pools.json }}"
 
@@ -126,7 +137,6 @@
             method: POST
             url_username: "{{ lsr_rhc_test_data.reg_username }}"
             url_password: "{{ lsr_rhc_test_data.reg_password }}"
-            validate_certs: false
             body_format: json
             body:
               name: "{{ item.name }}"

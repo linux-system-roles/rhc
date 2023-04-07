@@ -44,6 +44,7 @@
       or "NOT" in __rhc_insights_status.stdout
       or "unregistered" in __rhc_insights_status.stdout
   register: __rhc_insights_registration_result
+  changed_when: true
 
 - name: Do the collection if insights-client was registered
   shell: insights-client & wait
@@ -54,6 +55,7 @@
     - >-
       __insights_tags_added is changed
       or __insights_tags_removed is changed
+  changed_when: true
 
 - name: Configure remediation
   when: rhc_insights.remediation | d("present") == "present"

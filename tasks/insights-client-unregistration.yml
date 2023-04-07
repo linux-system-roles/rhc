@@ -10,3 +10,4 @@
       "This host is registered" in __rhc_insights_status.stdout
       or "Registered" in __rhc_insights_status.stdout
   register: __rhc_insights_unregister_result
+  changed_when: true

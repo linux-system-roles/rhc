@@ -39,8 +39,15 @@
         path: /etc/squid/squid.conf
         regexp: "^acl SSL_ports port {{ lsr_rhc_test_data.candlepin_port }}"
         insertbefore: "^acl Safe_ports "
+        firstmatch: true
         line: >-
           acl SSL_ports port {{ lsr_rhc_test_data.candlepin_port }} # Candlepin
+
+    - name: Set the shutdown lifetime
+      lineinfile:
+        path: /etc/squid/squid.conf
+        regexp: "^shutdown_lifetime "
+        line: "shutdown_lifetime 5 seconds"
 
     - name: Setup no authentication
       when:
@@ -76,25 +83,37 @@
         - name: Disable HTTP access allow
           lineinfile:
             path: /etc/squid/squid.conf
-            regexp: "^http_access allow (localhost|localnet)$"
+            regexp: "^http_access allow localnet$"
             state: absent
 
-        - name: Disable HTTP deny all
-          lineinfile:
-            path: /etc/squid/squid.conf
-            regexp: "^http_access deny all$"
-            state: absent
-
-        - name: Insert auth config into configuration
+        - name: Insert initial auth config
           blockinfile:
             path: /etc/squid/squid.conf
+            marker: "# {mark} ANSIBLE MANAGED BLOCK - auth"
+            insertbefore: BOF
             # yamllint disable rule:line-length
             block: |
               auth_param basic program /usr/lib64/squid/basic_ncsa_auth /etc/squid/passwd
+              auth_param basic children 5
+              auth_param basic credentialsttl 1 minute
               auth_param basic realm squid realm
-              acl authenticated proxy_auth REQUIRED
-              http_access allow authenticated
             # yamllint enable rule:line-length
+
+        - name: Add authenticated acl
+          lineinfile:
+            path: /etc/squid/squid.conf
+            regexp: "^acl authenticated "
+            insertafter: "^acl Safe_ports "
+            line: >-
+              acl authenticated proxy_auth REQUIRED
+
+        - name: Allow authenticated acl
+          lineinfile:
+            path: /etc/squid/squid.conf
+            regexp: "^http_access allow authenticated"
+            insertafter: "^http_access deny manager"
+            line: >-
+              http_access allow authenticated
 
     - name: Restart squid
       service:

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 lsr_rhc_test_data:
-  candlepin_host: localhost
+  candlepin_host: candlepin.local
   candlepin_port: 8443
   candlepin_prefix: /candlepin
   candlepin_insecure: false

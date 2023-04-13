@@ -6,56 +6,39 @@
 - name: Deploy Candlepin
   when: lsr_rhc_test_data_file | length == 0
   block:
-    - name: Skip on OSes not supported by Candlepin
-      meta: end_play
-      when:
-        - ansible_distribution in ["CentOS", "RedHat"]
-        - ansible_distribution_major_version | int > 8
-
     - name: Set helper fact for Candlepin base URL
       set_fact:
         _cp_url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
 
-    - name: Clone ansible-role-candlepin repo
-      git:
-        repo: https://github.com/candlepin/ansible-role-candlepin.git
-        # wokeignore:rule=master
-        version: master
-        dest: "{{ playbook_dir }}/roles/candlepin"
-      delegate_to: 127.0.0.1
-      become: false
-
-    - name: Create 'candlepin' user
-      user:
-        name: candlepin
-
-    - name: Create sudoers configuration
-      copy:
-        dest: /etc/sudoers.d/candlepin
-        content: "candlepin ALL=(ALL) NOPASSWD: ALL\n"
-        mode: 0440
+    - name: Add candlepin hostname to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "127.0.0.1   {{ lsr_rhc_test_data.candlepin_host }}"
+        regexp: ".*{{ lsr_rhc_test_data.candlepin_host }}"
 
     - name: Install needed packages
       package:
         name:
-          - expect
+          - podman
         state: present
 
-    - name: Run Candlepin install
-      block:
-        - name: Include candlepin role
-          include_role:
-            name: candlepin
-          vars:
-            cp_configure_mariadb: false
-            cp_configure_ruby: false
-            cp_deploy_args: "-g -a -f -t -r"
-            cp_git_ref: 9263a30b1612a22ec00ae05bd7d9ed6e0cdedbaf
-
-    - name: Enable tomcat
-      service:
-        name: tomcat
-        enabled: true
+    - name: Start Candlepin container
+      command:
+        argv:
+          - podman
+          - run
+          - "--rm"
+          - "--detach"
+          - "--name"
+          - candlepin
+          - "--publish"
+          - "8443:8443"
+          - "--publish"
+          - "8080:8080"
+          - "--hostname"
+          - "{{ lsr_rhc_test_data.candlepin_host }}"
+          - ghcr.io/ptoscano/candlepin-unofficial
+      changed_when: false
 
     - name: Ensure directories exist
       file:
@@ -68,33 +51,33 @@
         - /etc/rhsm/ca
 
     - name: Copy product certificates
-      copy:
-        src: "/home/candlepin/devel/candlepin/generated_certs/{{ item }}.pem"
-        dest: "/etc/pki/product-default/{{ item }}.pem"
-        remote_src: true
-        mode: 0644
+      command:
+        argv:
+          - podman
+          - cp
+          - candlepin:/home/candlepin/devel/candlepin/generated_certs/{{ item }}.pem  # yamllint disable-line
+          - /etc/pki/product-default/
+      changed_when: false
       loop:
         - "5050"
 
-    - name: Install GPG key for RPM repositories
-      get_url:
-        url: "http://{{ lsr_rhc_test_data.candlepin_host }}:8080/RPM-GPG-KEY-candlepin"  # yamllint disable-line
-        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
-        mode: 0644
-
     - name: Copy Candlepin CA certificate for subscription-manager
-      copy:
-        src: /etc/candlepin/certs/candlepin-ca.crt
-        dest: /etc/rhsm/ca/candlepin-ca.pem
-        remote_src: true
-        mode: 0644
+      command:
+        argv:
+          - podman
+          - cp
+          - candlepin:/etc/candlepin/certs/candlepin-ca.crt
+          - /etc/rhsm/ca/candlepin-ca.pem
+      changed_when: false
 
     - name: Copy Candlepin CA certificate for system
-      copy:
-        src: /etc/candlepin/certs/candlepin-ca.crt
-        dest: /etc/pki/ca-trust/source/anchors/candlepin-ca.pem
-        remote_src: true
-        mode: 0644
+      command:
+        argv:
+          - podman
+          - cp
+          - candlepin:/etc/candlepin/certs/candlepin-ca.crt
+          - /etc/pki/ca-trust/source/anchors/candlepin-ca.pem
+      changed_when: false
 
     - name: Update system certificates store
       command:
@@ -102,6 +85,22 @@
           - update-ca-trust
           - extract
       changed_when: false
+
+    - name: Wait for started Candlepin
+      uri:
+        url: "{{ _cp_url }}"
+        method: HEAD
+        validate_certs: false
+      register: waitresult
+      until: waitresult is succeeded
+      retries: 60
+      delay: 5
+
+    - name: Install GPG key for RPM repositories
+      get_url:
+        url: "http://{{ lsr_rhc_test_data.candlepin_host }}:8080/RPM-GPG-KEY-candlepin"  # yamllint disable-line
+        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
+        mode: 0644
 
     - name: Query for default_key activation key
       uri:

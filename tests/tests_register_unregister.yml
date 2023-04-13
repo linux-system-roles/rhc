@@ -158,6 +158,23 @@
           insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
         rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
+    - name: Register (using activation keys, noop)
+      include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_auth:
+          activation_keys:
+            keys: "{{ lsr_rhc_test_data.reg_activation_keys }}"
+        rhc_insights:
+          state: absent
+        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+        rhc_server:
+          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+          port: "{{ lsr_rhc_test_data.candlepin_port }}"
+          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
     - name: Unregister
       include_role:
         name: linux-system-roles.rhc

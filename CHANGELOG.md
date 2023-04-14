@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.1.2] - 2023-04-14
+--------------------
+
+### Bug Fixes
+
+- Do not pass fake creds when activation keys are specified (#92)
+
+### Other Changes
+
+- Fix minor ansible-lint issues (#88)
+
 [1.1.1] - 2023-03-16
 --------------------
 

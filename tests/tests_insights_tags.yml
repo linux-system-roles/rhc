@@ -2,7 +2,7 @@
 ---
 - name: Basic test for insights tags
   hosts: all
-  gather_facts: true
+  gather_facts: false
 
   tasks:
     - name: Setup Insights

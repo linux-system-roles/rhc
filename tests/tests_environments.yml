@@ -2,7 +2,7 @@
 ---
 - name: Basic repository enablement/disablement test
   hosts: all
-  gather_facts: true
+  gather_facts: false
   become: true
   tags:
     - tests::slow
@@ -18,6 +18,14 @@
         - >-
           lsr_rhc_test_data.envs_register is none
           or lsr_rhc_test_data.envs_register | d([]) | length == 0
+
+    - name: Ensure ansible_facts used by the test
+      setup:
+        gather_subset:
+          - "!all"
+          - "!min"
+          - distribution
+          - distribution_major_version
 
     - name: Try to register (wrong environment)
       block:

@@ -5,11 +5,21 @@
     lsr_rhc_test_data_file: "{{ lookup('env', 'LSR_RHC_TEST_DATA') }}"
   become: false
 
-- name: Import test data
-  include_vars:
-    file: "{{ lsr_rhc_test_data_file }}"
+- name: Handle external lsr_rhc_test_data
   when: lsr_rhc_test_data_file | length > 0
   become: false
+  block:
+    - name: Import test data
+      include_vars:
+        file: "{{ lsr_rhc_test_data_file }}"
+
+    - name: Get facts for external test data
+      setup:
+        gather_subset:
+          - "!all"
+          - "!min"
+          - distribution
+          - distribution_major_version
 
 - name: Set local lsr_rhc_test_data
   include_vars:

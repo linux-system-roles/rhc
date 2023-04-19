@@ -2,7 +2,7 @@
 ---
 - name: Basic repository enablement/disablement test
   hosts: all
-  gather_facts: true
+  gather_facts: false
   become: true
   tags:
     - tests::slow

@@ -2,7 +2,7 @@
 ---
 - name: Basic insights-client register/unregister
   hosts: all
-  gather_facts: true
+  gather_facts: false
 
   tasks:
     - name: Setup Insights

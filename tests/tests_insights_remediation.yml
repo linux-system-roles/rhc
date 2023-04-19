@@ -2,7 +2,7 @@
 ---
 - name: Test for insights remediation enabled & disabled
   hosts: all
-  gather_facts: true
+  gather_facts: false
 
   tasks:
     - name: Setup Insights

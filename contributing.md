@@ -1,5 +1,5 @@
-Contributing to the Rhc Linux System Role
-=============================================
+Contributing to the rhc Linux System Role
+=========================================
 
 Where to start
 --------------

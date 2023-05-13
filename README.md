@@ -1,4 +1,5 @@
 # rhc
+
 ![rhc](https://github.com/linux-system-roles/template/workflows/tox/badge.svg)
 
 An ansible role which connects RHEL systems to Red Hat.
@@ -17,12 +18,16 @@ In addition, the role requires rhc, which is available from the standard RHEL
 repositories, in case the Insights remediation is enabled (and it is by
 default).
 
+### Collection requirements
+
 The role requires modules from `community.general`.  If you are using
 `ansible-core`, you must install the `community.general` collection.  Use the
 file `meta/collection-requirements.yml` to install it:
+
 ```
 ansible-galaxy collection install -vv -r meta/collection-requirements.yml
 ```
+
 If you are using Ansible Engine 2.9, or are using an Ansible bundle which
 includes these collections/modules, you should have to do nothing.
 
@@ -45,8 +50,9 @@ it was already connected; because of this, the role will always report a
 
 The organization of the user. This *must* be specified when connecting if
 either:
-- the user belongs to more than one organization
-- using activation keys (see `rhc_auth` below)
+
+* the user belongs to more than one organization
+* using activation keys (see `rhc_auth` below)
 
 ```yaml
     rhc_auth: {}
@@ -64,16 +70,19 @@ are for.
 
 For authenticating using username & password, specify the `login` dictionary
 using the following mandatory keys:
+
 ```yaml
 rhc_auth:
   login:
     username: "your-username"
     password: "your-password"
 ```
+
 using `rhc_organization` if needed.
 
 For authenticating using activation keys, specify the `activation_keys`
 dictionary using the following mandatory keys, together with `rhc_organization`:
+
 ```yaml
 rhc_auth:
   activation_keys:
@@ -87,6 +96,7 @@ rhc_organization: "your-organization"
 
 The details of the registration server to connect to; it can contain the
 following optional keys:
+
 ```yaml
 rhc_server:
   hostname: "hostname"
@@ -94,10 +104,11 @@ rhc_server:
   prefix: "server-prefix"
   insecure: false
 ```
-- `hostname` is the hostname of the server
-- `port` is the port to which connect to on the server
-- `prefix` is the prefix (starting with `/`) for the API calls to the server
-- `insecure` specifies whether to disable the validation of the SSL certificate
+
+* `hostname` is the hostname of the server
+* `port` is the port to which connect to on the server
+* `prefix` is the prefix (starting with `/`) for the API calls to the server
+* `insecure` specifies whether to disable the validation of the SSL certificate
   of the server
 
 ```yaml
@@ -112,9 +123,11 @@ The base URL for receiving content from the subscription server.
 
 A list of repositories to enable or disable in the system. Each item is a
 dictionary containing two keys:
-- `name` is the name of a repository; this keys is mandatory
-- `state` is the state of that repository in the system, and it can be `enabled`
+
+* `name` is the name of a repository; this keys is mandatory
+* `state` is the state of that repository in the system, and it can be `enabled`
   or `disabled`; this key is optional, and `enabled` if not specified
+
 ```yaml
 rhc_repositories:
   - {name: "repository-1", state: enabled}
@@ -165,9 +178,10 @@ A dictionary of tags that is added to the system record in Host Based Inventory
 for systems in the inventory.
 
 Possible values of this variable:
-- `null` or an empty value (e.g.: `{}`): the tags file content is not changed
-- `{state: absent}`: all the tags are removed (by removing the tags file)
-- any other value: the file is created with the specified tags
+
+* `null` or an empty value (e.g.: `{}`): the tags file content is not changed
+* `{state: absent}`: all the tags are removed (by removing the tags file)
+* any other value: the file is created with the specified tags
 
 Since the tags are arbitrary values for the tagging of systems, there is no
 fixed format. In the specified dictionary, the keys are strings, and the type
@@ -176,6 +190,7 @@ etc).
 
 Example of the tags configured in the `insights-client`
 [documentation](https://access.redhat.com/documentation/en-us/red_hat_insights/2023/html/client_configuration_guide_for_red_hat_insights/con-insights-client-tagging-overview_insights-cg-adding-tags):
+
 ```yaml
 rhc_insights:
   tags:
@@ -192,6 +207,7 @@ rhc_insights:
 ```
 
 The details of the proxy server to use for connecting:
+
 ```yaml
 rhc_proxy:
   hostname: "proxy-hostname"
@@ -199,11 +215,12 @@ rhc_proxy:
   username: "proxy-hostname"
   password: "proxy-password"
 ```
-- `hostname` is the hostname of the proxy server
-- `port` is the port to which connect to on the proxy server
-- `username` is the username to use for authenticating on the proxy server;
+
+* `hostname` is the hostname of the proxy server
+* `port` is the port to which connect to on the proxy server
+* `username` is the username to use for authenticating on the proxy server;
   it can be not specified if the proxy server does not require authentication
-- `password` is the password to use for authenticating on the proxy server;
+* `password` is the password to use for authenticating on the proxy server;
   it can be not specified if the proxy server does not require authentication
 
 Use `{"state":"absent"}` to reset all the proxy configurations to empty
@@ -220,14 +237,11 @@ of Ansible Vault as source for them.
 The list of environments to which register to when connecting the system.
 
 *NB*:
-- this only works when the system is being connected from an unconnected state
+
+* this only works when the system is being connected from an unconnected state
   -- it cannot change the environments of already connected systems
-- this requires the environments to be enabled on the registration server;
+* this requires the environments to be enabled on the registration server;
   in Red Hat Satellite or Katello, this feature is called "Content Views"
-
-## Dependencies
-
-None.
 
 ## Example Playbooks
 
@@ -235,7 +249,8 @@ Ensure the connection to Red Hat including Insights, authenticating using
 username & password:
 
 ```yaml
-- hosts: all
+- name: Register systems
+  hosts: all
   vars:
     rhc_auth:
       login:
@@ -250,7 +265,8 @@ username & password:
 Ensure that certain RHEL 9 repositories are enabled, and another one is not:
 
 ```yaml
-- hosts: all
+- name: Ensure RHEL 9 repositories are enabled
+  hosts: all
   vars:
     rhc_repositories:
       - {name: "rhel-9-for-x86_64-baseos-rpms", state: enabled}
@@ -263,7 +279,8 @@ Ensure that certain RHEL 9 repositories are enabled, and another one is not:
 Ensure that a RHEL 8 system is locked on RHEL 8.6:
 
 ```yaml
-- hosts: all
+- name: Ensure systems are locked at RHEL 8.6
+  hosts: all
   vars:
     rhc_release: 8.6
   roles:
@@ -274,7 +291,8 @@ Ensure that a system is connected to Insights, without optional features such
 as automatic updates and remediation:
 
 ```yaml
-- hosts: all
+- name: Ensure systems are connected to Insights
+  hosts: all
   vars:
     rhc_insights:
       autoupdate: false

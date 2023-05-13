@@ -1,4 +1,4 @@
-## Candlepin-based tests
+# Candlepin-based tests
 
 Testing the registration to Red Hat requires a Candlepin server.
 The setup of the integration tests deploys one by default directly from

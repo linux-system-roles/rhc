@@ -13,6 +13,7 @@
         - name: Configure tags and register insights
           include_role:
             name: linux-system-roles.rhc
+            public: true
           vars:
             rhc_auth:
               login:
@@ -32,14 +33,14 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
-        - name: Get state of insights tags.yml file
+        - name: Get state of insights tags.yaml file
           include_tasks: tasks/get_insights_tags.yml
 
         - name: Rename the tags to test_tags_modified
           set_fact:
             test_tags_new: "{{ test_tags }}"
 
-        - name: Check if tags.yml file exists and its size is > 0
+        - name: Check if tags.yaml file exists and its size is > 0
           assert:
             that: test_tags_new.stat.size > 0
 
@@ -54,14 +55,14 @@
                   - ansible
                   - rhc
 
-        - name: Get state of insights tags.yml file
+        - name: Get state of insights tags.yaml file
           include_tasks: tasks/get_insights_tags.yml
 
         - name: Rename the tags to test_tags_chg
           set_fact:
             test_tags_chg: "{{ test_tags }}"
 
-        - name: Check if tags.yml file exists and its size has changed
+        - name: Check if tags.yaml file exists and its size has changed
           assert:
             that:
               - test_tags_new.stat.size != test_tags_chg.stat.size
@@ -73,10 +74,10 @@
             rhc_insights:
               remediation: absent
 
-        - name: Get state of insights tags.yml file
+        - name: Get state of insights tags.yaml file
           include_tasks: tasks/get_insights_tags.yml
 
-        - name: Check if tags.yml file exists and its size is the same
+        - name: Check if tags.yaml file exists and its size is the same
           assert:
             that:
               - test_tags.stat.size == test_tags_chg.stat.size
@@ -90,10 +91,10 @@
               tags:
                 state: absent
 
-        - name: Get state of insights tags.yml file
+        - name: Get state of insights tags.yaml file
           include_tasks: tasks/get_insights_tags.yml
 
-        - name: Check that insights tags.yml file does not exists
+        - name: Check that insights tags.yaml file does not exists
           assert:
             that: not test_tags.stat.exists
 

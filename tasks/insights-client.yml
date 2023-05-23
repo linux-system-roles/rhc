@@ -12,7 +12,7 @@
 
 - name: Add insights tags
   copy:
-    dest: /etc/insights-client/tags.yml
+    dest: "{{ __rhc_insights_tags }}"
     content: "{{ rhc_insights.tags | to_nice_yaml(indent=2) }}"
     mode: '0644'
   register: __insights_tags_added
@@ -24,7 +24,7 @@
 - name: Delete insights tags
   file:
     state: absent
-    path: /etc/insights-client/tags.yml
+    path: "{{ __rhc_insights_tags }}"
   register: __insights_tags_removed
   when:
     - rhc_insights.tags | d(None) == __rhc_state_absent

@@ -29,3 +29,5 @@ __rhc_fake_credential: "this-is-not-a-credential!"
 __rhc_empty_string: ""
 
 __rhc_insights_conf: "/etc/insights-client/insights-client.conf"
+
+__rhc_insights_tags: "/etc/insights-client/tags.yaml"

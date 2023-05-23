@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.1.3] - 2023-05-23
+--------------------
+
+### Bug Fixes
+
+- fix: fix filename with insights-client tags
+
+### Other Changes
+
+- Minimize Ansible facts needed
+- ci: Add commitlint GitHub action to ensure conventional commits with feedback
+- docs: Consistent contributing.md for all roles - allow role specific contributing.md section
+- docs: remove unused Dependencies section in README
+- ci: update tox-lsr to version 3.0.0
+
 [1.1.2] - 2023-04-14
 --------------------
 

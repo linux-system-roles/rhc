@@ -211,12 +211,15 @@ The details of the proxy server to use for connecting:
 ```yaml
 rhc_proxy:
   hostname: "proxy-hostname"
+  scheme: http
   port: 4321
   username: "proxy-hostname"
   password: "proxy-password"
 ```
 
 * `hostname` is the hostname of the proxy server
+* `scheme` is the scheme to use for the proxy server, usually "http" or "https",
+  defaulting to "http"
 * `port` is the port to which connect to on the proxy server
 * `username` is the username to use for authenticating on the proxy server;
   it can be not specified if the proxy server does not require authentication

@@ -141,6 +141,7 @@
         rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
         rhc_proxy:
           hostname: "{{ lsr_rhc_test_data.proxy_noauth_hostname }}"
+          scheme: "{{ lsr_rhc_test_data.proxy_noauth_scheme | d(omit) }}"
           port: "{{ lsr_rhc_test_data.proxy_noauth_port }}"
 
     - name: Unregister
@@ -174,6 +175,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_proxy:
               hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              scheme: "{{ lsr_rhc_test_data.proxy_auth_scheme | d(omit) }}"
               port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
 
         - name: Unreachable task
@@ -204,6 +206,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_proxy:
               hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              scheme: "{{ lsr_rhc_test_data.proxy_auth_scheme | d(omit) }}"
               port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
               username: "{{ lsr_rhc_test_data.proxy_nonworking_username }}"
               password: "{{ lsr_rhc_test_data.proxy_nonworking_password }}"
@@ -236,6 +239,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_proxy:
               hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              scheme: "{{ lsr_rhc_test_data.proxy_auth_scheme | d(omit) }}"
               port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
               username: "{{ lsr_rhc_test_data.proxy_nonworking_username }}"
               password: "{{ lsr_rhc_test_data.proxy_auth_password }}"
@@ -268,6 +272,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_proxy:
               hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              scheme: "{{ lsr_rhc_test_data.proxy_auth_scheme | d(omit) }}"
               port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
               username: "{{ lsr_rhc_test_data.proxy_auth_username }}"
               password: "{{ lsr_rhc_test_data.proxy_nonworking_password }}"
@@ -299,6 +304,7 @@
         rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
         rhc_proxy:
           hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+          scheme: "{{ lsr_rhc_test_data.proxy_auth_scheme | d(omit) }}"
           port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
           username: "{{ lsr_rhc_test_data.proxy_auth_username }}"
           password: "{{ lsr_rhc_test_data.proxy_auth_password }}"

@@ -55,6 +55,13 @@
       {%-   else -%}
       {{ rhc_proxy.hostname }}
       {%- endif %}"
+    server_proxy_scheme: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ 'http' }}
+      {%-   elif 'scheme' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.scheme }}
+      {%- endif %}"
     server_proxy_port: "{% if rhc_proxy == __rhc_state_absent -%}
       {{ __rhc_empty_string }}
       {%-   elif 'port' not in rhc_proxy -%}

@@ -144,6 +144,13 @@
           scheme: "{{ lsr_rhc_test_data.proxy_noauth_scheme | d(omit) }}"
           port: "{{ lsr_rhc_test_data.proxy_noauth_port }}"
 
+    - name: Check scheme
+      command: >-
+        grep '^proxy_scheme *= *{{ lsr_rhc_test_data.proxy_noauth_scheme }}'
+        /etc/rhsm/rhsm.conf
+      changed_when: false
+      when: "'proxy_noauth_scheme' in lsr_rhc_test_data"
+
     - name: Unregister
       include_role:
         name: linux-system-roles.rhc
@@ -308,6 +315,13 @@
           port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
           username: "{{ lsr_rhc_test_data.proxy_auth_username }}"
           password: "{{ lsr_rhc_test_data.proxy_auth_password }}"
+
+    - name: Check scheme
+      command: >-
+        grep '^proxy_scheme *= *{{ lsr_rhc_test_data.proxy_auth_scheme }}'
+        /etc/rhsm/rhsm.conf
+      changed_when: false
+      when: "'proxy_auth_scheme' in lsr_rhc_test_data"
 
     - name: Unregister
       include_role:

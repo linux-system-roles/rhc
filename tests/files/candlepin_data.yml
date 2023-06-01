@@ -18,10 +18,10 @@ lsr_rhc_test_data:
     - {name: "content-label-32060", state: disabled}
   release: null  # no releases in Candlepin test data
   proxy_noauth_hostname: localhost
-  proxy_noauth_scheme: http
+  proxy_noauth_scheme: https
   proxy_noauth_port: 3128
   proxy_auth_hostname: localhost
-  proxy_auth_scheme: http
+  proxy_auth_scheme: https
   proxy_auth_port: 3130
   proxy_auth_username: "proxyuser"
   proxy_auth_password: "proxypass"

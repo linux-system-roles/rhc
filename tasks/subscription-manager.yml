@@ -17,19 +17,6 @@
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
 
-- name: Change rhsm.baseurl
-  command:
-    argv:
-      - subscription-manager
-      - config
-      - "--rhsm.baseurl={{ rhc_baseurl }}"
-  changed_when: false
-  when:
-    - rhc_state | d("present") in ["present", "reconnect"]
-    - rhc_baseurl is not none
-    - rhc_baseurl != omit
-    - rhc_baseurl | string | length > 0
-
 - name: Call subscription-manager
   # noqa jinja[spacing]
   community.general.redhat_subscription:
@@ -93,6 +80,7 @@
     environment: "{{ rhc_environments | join(',')
       if (rhc_environments | length > 0
           and rhc_state | d('present') != 'absent') else omit }}"
+    rhsm_baseurl: "{{ rhc_baseurl | d(omit) }}"
 
 - name: Configure subscribed system
   when:

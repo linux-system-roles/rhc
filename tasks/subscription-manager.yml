@@ -46,7 +46,9 @@
           and not 'keys' in rhc_auth.activation_keys | d({})) else omit }}"
     release: "{{ rhc_release
       if (rhc_state | d('present') != 'absent'
-           and rhc_release != __rhc_state_absent)
+           and rhc_release != __rhc_state_absent
+           and not rhc_release is none
+           and rhc_release != omit)
       else omit }}"
     server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
       {{ __rhc_empty_string }}
@@ -93,21 +95,15 @@
   when:
     - rhc_state | d("present") in ["present", "reconnect"]
   block:
-    - name: Set the release
+    - name: Set or unset the release
       community.general.rhsm_release:
-        release: "{{ rhc_release }}"
+        release: "{{ rhc_release if rhc_release != __rhc_state_absent
+          else omit }}"
       when:
         - rhc_state | d("present") == "present"
         - __rhc_subman_identity.rc == 0
-        - rhc_release != __rhc_state_absent
-
-    - name: Unset the release
-      community.general.rhsm_release:
-        release: null
-      when:
-        - rhc_state | d("present") == "present"
-        - __rhc_subman_identity.rc == 0
-        - rhc_release == __rhc_state_absent
+        - not rhc_release is none
+        - rhc_release != omit
 
     - name: Configure repositories
       community.general.rhsm_repository:

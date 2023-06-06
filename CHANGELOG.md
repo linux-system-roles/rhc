@@ -1,6 +1,24 @@
 Changelog
 =========
 
+[1.2.0] - 2023-06-06
+--------------------
+
+### New Features
+
+- feat: implement rhc_proxy.scheme (#106)
+
+### Bug Fixes
+
+- fix: correctly set release using new behavior of rhsm_release (#108)
+
+### Other Changes
+
+- refactor: pass rhc_baseurl directly to redhat_subscription (#105)
+- test: add check for proxy scheme (#107)
+- chore(meta): temporarily stop supporting Fedora (#109)
+- build: require community.general 6.6.0 (#110)
+
 [1.1.3] - 2023-05-23
 --------------------
 

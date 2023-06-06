@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.2.1] - 2023-06-06
+--------------------
+
+### Other Changes
+
+- refactor: drop fake credential workaround (#111)
+
 [1.2.0] - 2023-06-06
 --------------------
 

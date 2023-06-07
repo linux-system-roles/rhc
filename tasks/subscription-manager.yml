@@ -13,6 +13,8 @@
       - identity
   when:
     - rhc_state | d("present") == "present"
+    - not rhc_release is none
+    - rhc_release != omit
   register: __rhc_subman_identity
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
@@ -93,9 +95,9 @@
           else omit }}"
       when:
         - rhc_state | d("present") == "present"
-        - __rhc_subman_identity.rc == 0
         - not rhc_release is none
         - rhc_release != omit
+        - __rhc_subman_identity.rc == 0
 
     - name: Configure repositories
       community.general.rhsm_repository:

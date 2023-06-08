@@ -26,6 +26,7 @@
           - "!min"
           - distribution
           - distribution_major_version
+          - distribution_version
 
     - name: Try to register (wrong environment)
       block:
@@ -84,7 +85,10 @@
           when:
             - >-
               ansible_distribution not in ["CentOS", "RedHat"]
-              or ansible_distribution_major_version | int >= 8
+              or (ansible_distribution == "RedHat"
+                  and ansible_distribution_version is version("8.6", ">="))
+              or (ansible_distribution == "CentOS"
+                  and ansible_distribution_major_version | int >= 8)
           block:
             - name: Get enabled environments
               include_tasks: tasks/list_environments.yml

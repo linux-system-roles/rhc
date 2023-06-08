@@ -168,6 +168,10 @@ enabled by default.
 Whether the system is configured to run the Insights remediation; valid values
 are `present` (the default, to ensure remediation), and `absent`.
 
+Please note that the Insights remediation is supported only on RHEL 8.4 or
+greater, as the needed packages are available only starting from that version;
+on older versions, this parameter has no effect.
+
 ```yaml
     rhc_insights:
       tags: {}

@@ -1,6 +1,26 @@
 Changelog
 =========
 
+[1.2.2] - 2023-06-08
+--------------------
+
+### Other Changes
+
+- perf: manually query for subscription status only when changing release (#114)
+
+  After commit bdfeb32fa3ff665e8e0fa8bfab63393786412b0f (i.e. the drop of the fake credentials), the registration status before invoking the `redhat_subscription` module is needed only because of the release setting. This is because the `redhat_subscription` module only sets a release when registering; on an already registered system, the `rshm_release` module is needed.
+  
+  Hence, limit the query of the system registration status only in case there is a release change (i.e. `rhc_release` is different than null).
+  
+  Followup of commit bdfeb32fa3ff665e8e0fa8bfab63393786412b0f
+
+- tests: ensure to always unregister (#115)
+
+  Wrap a couple of Insights tests into blocks, so it is possible to always ensure the unregistration at the end of the tests, even in case of failure.
+  
+  There should be no behaviour change w.r.t. what the tests themselves check.
+
+
 [1.2.1] - 2023-06-06
 --------------------
 

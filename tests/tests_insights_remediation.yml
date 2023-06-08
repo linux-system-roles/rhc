@@ -8,6 +8,18 @@
     - name: Setup Insights
       import_tasks: tasks/setup_insights.yml
 
+    - name: Ensure ansible_facts used by the test
+      setup:
+        gather_subset:
+          - "!all"
+          - "!min"
+          - distribution_version
+
+    - name: Skip if the RHEL version is older than 8.4
+      meta: end_play
+      when:
+        - ansible_distribution_version is version("8.4", "<")
+
     - name: Test remediation
       block:
         - name: Register insights and enable remediation

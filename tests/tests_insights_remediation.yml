@@ -31,6 +31,7 @@
                 username: "{{ lsr_rhc_test_data.reg_username }}"
                 password: "{{ lsr_rhc_test_data.reg_password }}"
             rhc_insights:
+              autoupdate: false
               remediation: present
               state: present
             rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
@@ -55,6 +56,7 @@
             name: linux-system-roles.rhc
           vars:
             rhc_insights:
+              autoupdate: false
               remediation: absent
 
         - name: Get service_facts
@@ -71,6 +73,7 @@
             name: linux-system-roles.rhc
           vars:
             rhc_insights:
+              autoupdate: false
               remediation: absent
 
       always:

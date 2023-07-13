@@ -12,12 +12,8 @@ __rhc_required_facts:
 # the subsets of ansible_facts that need to be gathered in case any of the
 # fact in __rhc_required_facts is missing; see the documentation of
 # the 'gather_subset' parameter of the 'setup' module
-__rhc_required_fact_subsets:
-  - "!all"
-  - "!min"
-  - distribution
-  - distribution_major_version
-  - distribution_version
+__rhc_required_fact_subsets: "{{ ['!all', '!min'] +
+  __rhc_required_facts }}"
 
 __rhc_state_absent:
   state: absent

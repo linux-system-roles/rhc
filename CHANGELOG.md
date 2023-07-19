@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.2.3] - 2023-07-19
+--------------------
+
+### Bug Fixes
+
+- fix: enable remediation only on RHEL >= 8.4 (#116)
+- fix: facts being gathered unnecessarily (#124)
+
+### Other Changes
+
+- tests: tests_environments: fix distro version check (#117)
+- ci: Add pull request template and run commitlint on PR title only (#121)
+- ci: Rename commitlint to PR title Lint, echo PR titles from env var (#122)
+- ci: ansible-lint - ignore var-naming[no-role-prefix] (#123)
+
 [1.2.2] - 2023-06-08
 --------------------
 

@@ -29,7 +29,10 @@
     password: "{{ rhc_auth.login.password | d(omit) }}"
     activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
       if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
-    org_id: "{{ rhc_organization | d(omit) }}"
+    org_id: "{{ rhc_organization
+      if (not rhc_organization is none
+          and rhc_organization != omit)
+      else omit }}"
     server_hostname: "{{ rhc_server.hostname | d(omit) }}"
     server_port: "{{ rhc_server.port | d(omit) }}"
     server_prefix: "{{ rhc_server.prefix | d(omit) }}"
@@ -83,7 +86,10 @@
     environment: "{{ rhc_environments | join(',')
       if (rhc_environments | length > 0
           and rhc_state | d('present') != 'absent') else omit }}"
-    rhsm_baseurl: "{{ rhc_baseurl | d(omit) }}"
+    rhsm_baseurl: "{{ rhc_baseurl
+      if (not rhc_baseurl is none
+          and rhc_baseurl != omit)
+      else omit }}"
 
 - name: Configure subscribed system
   when:

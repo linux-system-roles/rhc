@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.2.4] - 2023-07-31
+--------------------
+
+### Bug Fixes
+
+- fix: use rhc_organization and rhc_baseurl only when specified (#127)
+
 [1.2.3] - 2023-07-19
 --------------------
 

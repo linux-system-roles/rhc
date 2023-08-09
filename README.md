@@ -24,7 +24,7 @@ The role requires modules from `community.general`.  If you are using
 `ansible-core`, you must install the `community.general` collection.  Use the
 file `meta/collection-requirements.yml` to install it:
 
-```
+```bash
 ansible-galaxy collection install -vv -r meta/collection-requirements.yml
 ```
 

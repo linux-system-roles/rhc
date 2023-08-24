@@ -58,16 +58,16 @@ lsr_rhc_test_data:
 - `release` is a release to set for the system; it has the same format of the
   `rhc_release` parameter of the `rhc` role
 - the various `proxy_*` variables represent proxy-related bits:
-   - `proxy_noauth_hostname` & `proxy_noauth_port` are the hostname & the port
+  - `proxy_noauth_hostname` & `proxy_noauth_port` are the hostname & the port
      of a proxy server that does not require authentication
-   - `proxy_noauth_scheme` is the scheme for the proxy server that does not
+  - `proxy_noauth_scheme` is the scheme for the proxy server that does not
      require authentication; it can be not specified if the proxy type is "http"
-   - `proxy_auth_hostname`, `proxy_auth_port`, `proxy_auth_username` &
+  - `proxy_auth_hostname`, `proxy_auth_port`, `proxy_auth_username` &
      `proxy_auth_password` are the hostname & the port of a proxy server that
       requires authentication, together with the credentials for it
-   - `proxy_auth_scheme` is the scheme for the proxy server that requires
+  - `proxy_auth_scheme` is the scheme for the proxy server that requires
      authentication; it can be not specified if the proxy type is "http"
-   - `proxy_nonworking_hostname`, `proxy_nonworking_port`,
+  - `proxy_nonworking_hostname`, `proxy_nonworking_port`,
      `proxy_nonworking_username` & `proxy_nonworking_password` are wrong details
      of proxy server configuration bits
 - `envs_register` is a list of working environments to use when registering a

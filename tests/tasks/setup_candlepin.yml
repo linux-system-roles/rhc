@@ -23,22 +23,16 @@
         state: present
 
     - name: Start Candlepin container
-      command:
-        argv:
-          - podman
-          - run
-          - "--rm"
-          - "--detach"
-          - "--name"
-          - candlepin
-          - "--publish"
-          - "8443:8443"
-          - "--publish"
-          - "8080:8080"
-          - "--hostname"
-          - "{{ lsr_rhc_test_data.candlepin_host }}"
-          - ghcr.io/ptoscano/candlepin-unofficial
-      changed_when: false
+      containers.podman.podman_container:
+        detach: true
+        hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+        image: ghcr.io/ptoscano/candlepin-unofficial
+        name: candlepin
+        publish:
+          - 8443:8443
+          - 8080:8080
+        rm: true
+        state: started
 
     - name: Ensure directories exist
       file:

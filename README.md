@@ -22,16 +22,12 @@ default).
 
 ### Collection requirements
 
-The role requires modules from `community.general`.  If you are using
-`ansible-core`, you must install the `community.general` collection.  Use the
-file `meta/collection-requirements.yml` to install it:
+The role requires modules from external collections.  Use the following command
+to install them:
 
 ```bash
 ansible-galaxy collection install -vv -r meta/collection-requirements.yml
 ```
-
-If you are using Ansible Engine 2.9, or are using an Ansible bundle which
-includes these collections/modules, you should have to do nothing.
 
 ## Role Variables
 

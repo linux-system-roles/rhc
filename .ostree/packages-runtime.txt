@@ -1,0 +1,5 @@
+ansible-core
+insights-client
+rhc
+rhc-worker-playbook
+subscription-manager

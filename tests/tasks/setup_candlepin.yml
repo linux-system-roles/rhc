@@ -6,6 +6,14 @@
 - name: Deploy Candlepin
   when: lsr_rhc_test_data_file | length == 0
   block:
+    - name: Get facts for external test data
+      setup:
+        gather_subset:
+          - "!all"
+          - "!min"
+          - distribution
+          - distribution_major_version
+
     - name: Set helper fact for Candlepin base URL
       set_fact:
         _cp_url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
@@ -28,6 +36,8 @@
         hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
         image: ghcr.io/ptoscano/candlepin-unofficial
         name: candlepin
+        privileged: "{{ ansible_distribution in ['CentOS', 'RedHat']
+          and ansible_distribution_major_version | int < 8 }}"
         publish:
           - 8443:8443
           - 8080:8080

@@ -4,6 +4,8 @@
   package:
     name: "subscription-manager"
     state: present
+    use: "{{ __rhc_is_ostree |
+             ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
   when: rhc_state | d('present') == "present"
 
 - name: Get subscription status

@@ -29,6 +29,8 @@
         name:
           - podman
         state: present
+        use: "{{ __rhc_is_ostree |
+                 ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
     - name: Start Candlepin container
       containers.podman.podman_container:

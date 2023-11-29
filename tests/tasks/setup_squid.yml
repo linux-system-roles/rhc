@@ -10,6 +10,8 @@
           - squid
           - httpd-tools
         state: present
+        use: "{{ __rhc_is_ostree |
+                 ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
     - name: Check the status of the backup of configuration
       stat:

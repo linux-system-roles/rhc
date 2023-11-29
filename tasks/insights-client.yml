@@ -4,6 +4,8 @@
   package:
     name: insights-client
     state: present
+    use: "{{ __rhc_is_ostree |
+             ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
 - name: Call insights status
   include_tasks: check-insights-status.yml
@@ -69,6 +71,8 @@
           - rhc-worker-playbook
           - ansible-core
         state: present
+        use: "{{ __rhc_is_ostree |
+                 ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
     - name: Enable remediation
       systemd:

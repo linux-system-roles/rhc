@@ -1,6 +1,23 @@
 Changelog
 =========
 
+[1.3.0] - 2023-12-04
+--------------------
+
+### New Features
+
+- feat: support for ostree systems (#145)
+
+### Other Changes
+
+- build(deps): Bump actions/checkout from 3 to 4 (#133)
+- ci: ensure dependabot git commit message conforms to commitlint (#136)
+- ci: tox-lsr version 3.1.1 (#141)
+- tests: use the containers.podman collection (#144)
+- tests: start candlepin container as privileged on EL 7 (#146)
+- chore: set a bash shebang recognized by ansible-test (#148)
+- ci: Bump actions/github-script from 6 to 7 (#149)
+
 [1.2.5] - 2023-09-07
 --------------------
 

@@ -38,6 +38,62 @@
     insertafter: "#auto_update"
     line: auto_update={{ rhc_insights.autoupdate | d(true) | bool }}
 
+- name: Check ansible host in insights-client config
+  when:
+    - rhc_insights.ansible_host is defined
+    - not rhc_insights.ansible_host is none
+    - rhc_insights.ansible_host != __rhc_state_absent
+    - rhc_insights.ansible_host != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^ansible_host="
+    state: present
+    line: ansible_host={{ rhc_insights.ansible_host }}
+  check_mode: true
+  register: __insights_ansible_host_exists
+
+- name: Configure ansible host
+  when:
+    - rhc_insights.ansible_host is defined
+    - not rhc_insights.ansible_host is none
+    - rhc_insights.ansible_host != omit
+    - rhc_insights.ansible_host != __rhc_state_absent
+    - __insights_ansible_host_exists.changed
+  block:
+    - name: Update ansible host in insights-client config
+      lineinfile:
+        path: "{{ __rhc_insights_conf }}"
+        regexp: "^ansible_host="
+        insertafter: "#ansible_host="
+        line: ansible_host={{ rhc_insights.ansible_host }}
+    - name: Update ansible host in inventory
+      shell: >-
+        insights-client --ansible-host={{ rhc_insights.ansible_host }} & wait
+      when:
+        - >-
+          "This host is registered" in __rhc_insights_status.stdout
+          or "Registered" in __rhc_insights_status.stdout
+      changed_when: true
+
+- name: Remove ansible host
+  when:
+    - rhc_insights.ansible_host is defined
+    - rhc_insights.ansible_host == __rhc_state_absent
+  block:
+    - name: Remove ansible host from insights-client config
+      lineinfile:
+        path: "{{ __rhc_insights_conf }}"
+        regexp: "^ansible_host="
+        state: absent
+    - name: Remove ansible host in inventory
+      shell: insights-client --ansible-host= & wait
+      register: __insights_ansible_host_removed
+      when:
+        - >-
+          "This host is registered" in __rhc_insights_status.stdout
+          or "Registered" in __rhc_insights_status.stdout
+      changed_when: true
+
 - name: Register insights-client
   shell: insights-client --register & wait
   when:

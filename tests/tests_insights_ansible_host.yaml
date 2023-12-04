@@ -1,0 +1,116 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Insights ansible host test
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Setup Insights
+      import_tasks: tasks/setup_insights.yml
+
+    - name: Test ansible_host
+      block:
+        - name: Add ansible_host and register insights
+          include_role:
+            name: linux-system-roles.rhc
+            public: true
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              ansible_host: host
+              remediation: absent
+              state: present
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+        - name: Check ansible_host is set to 'host' in config file
+          command:
+            grep -ixq "^ansible_host=host" {{ __rhc_insights_conf }}
+          changed_when: true
+
+        - name: Test ansible_host changed value after registration
+          block:
+            - name: Change ansible host to 'new-host'
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  ansible_host: new-host
+                  remediation: absent
+            - name: Check ansible_host is set to 'new-host' in config file
+              command:
+                grep -ixq "^ansible_host=new-host" {{ __rhc_insights_conf }}
+              changed_when: false
+            - name: Change ansible host to a null value (noop)
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  ansible_host: null
+                  remediation: absent
+            - name: Check ansible_host has not changed in config file
+              command:
+                grep -ixq "^ansible_host=new-host" {{ __rhc_insights_conf }}
+              changed_when: false
+
+        - name: Test ansible_host set to an absent value
+          block:
+            - name: Set ansible host to an absent value
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  ansible_host: {state: absent}
+                  remediation: absent
+            - name: Check ansible_host is not present in config file
+              lineinfile:
+                path: "{{ __rhc_insights_conf }}"
+                regexp: "^ansible_host="
+                state: absent
+              check_mode: true
+              register: __test_ansible_host_absent
+              failed_when: __test_ansible_host_absent.found
+
+        - name: Test ansible_host is removed during insights unregistration
+          block:
+            - name: Set ansible_host in config file
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  ansible_host: unreg-test
+                  remediation: absent
+            - name: Check ansible_host is set in config file
+              command:
+                grep -ixq "^ansible_host=unreg-test" {{ __rhc_insights_conf }}
+              changed_when: false
+            - name: Unregister insights to remove ansible_host in config file
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  state: absent
+            - name: Check ansible_host is not present in config file
+              lineinfile:
+                path: "{{ __rhc_insights_conf }}"
+                regexp: "^ansible_host="
+                state: absent
+              check_mode: true
+              register: __test_ansible_host_removed
+              failed_when: __test_ansible_host_removed.found
+
+      always:
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent

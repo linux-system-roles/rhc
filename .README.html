@@ -163,15 +163,10 @@ it is by default).</p>
 standard RHEL repositories, in case the Insights remediation is enabled
 (and it is by default).</p>
 <h2 id="collection-requirements">Collection requirements</h2>
-<p>The role requires modules from <code>community.general</code>. If you
-are using <code>ansible-core</code>, you must install the
-<code>community.general</code> collection. Use the file
-<code>meta/collection-requirements.yml</code> to install it:</p>
+<p>The role requires modules from external collections. Use the
+following command to install them:</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ansible-galaxy</span> collection install <span class="at">-vv</span> <span class="at">-r</span> meta/collection-requirements.yml</span></code></pre></div>
-<p>If you are using Ansible Engine 2.9, or are using an Ansible bundle
-which includes these collections/modules, you should have to do
-nothing.</p>
 <h1 id="role-variables">Role Variables</h1>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_state</span><span class="kw">:</span><span class="at"> present</span></span></code></pre></div>

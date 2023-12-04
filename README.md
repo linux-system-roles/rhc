@@ -160,6 +160,21 @@ enabled by default.
 
 ```yaml
     rhc_insights:
+      ansible_host: "example-host"
+```
+
+Configures the ansible host name with a custom value for the system record
+in Host Based Inventory (HBI). This host name is used in playbooks by remediations.
+It is `null` by default and will use the system host name if not specified.
+
+Possible values of this variable:
+
+* `null` or an empty value: the ansible host name is not changed.
+* `{state: absent}`: the ansible host name is unset in the insights-client config file and Host Based Inventory (HBI) is updated to use the system host name.
+* any other string value: the ansible host name is changed in Host Based Inventory (HBI).
+
+```yaml
+    rhc_insights:
       remediation: present
 ```
 

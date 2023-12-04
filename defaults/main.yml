@@ -4,6 +4,7 @@ rhc_auth: {}
 rhc_baseurl: null
 rhc_environments: []
 rhc_insights:
+  ansible_host: null
   autoupdate: true
   remediation: present
   state: present

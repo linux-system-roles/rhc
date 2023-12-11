@@ -32,6 +32,11 @@
         use: "{{ __rhc_is_ostree |
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
+    - name: Stop and remove Candlepin container
+      containers.podman.podman_container:
+        name: candlepin
+        state: absent
+
     - name: Start Candlepin container
       containers.podman.podman_container:
         detach: true
@@ -43,7 +48,6 @@
         publish:
           - 8443:8443
           - 8080:8080
-        recreate: true
         rm: true
         state: started
 

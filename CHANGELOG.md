@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.4.0] - 2023-12-12
+--------------------
+
+### New Features
+
+- feat: support again EL7 (#151)
+
+### Other Changes
+
+- tests: force recreating Candlepin container (#152)
+- tests: manually stop the Candlepin container (#153)
+
 [1.3.0] - 2023-12-04
 --------------------
 

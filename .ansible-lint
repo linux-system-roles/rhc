@@ -22,3 +22,5 @@ exclude_paths:
   - examples/roles/
 mock_roles:
   - linux-system-roles.rhc
+mock_modules:
+  - containers.podman.podman_container

@@ -41,7 +41,7 @@
       containers.podman.podman_container:
         detach: true
         hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
-        image: ghcr.io/ptoscano/candlepin-unofficial
+        image: ghcr.io/ptoscano/candlepin-unofficial:4.4.2-1
         name: candlepin
         privileged: "{{ ansible_distribution in ['CentOS', 'RedHat']
           and ansible_distribution_major_version | int < 8 }}"

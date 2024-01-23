@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.5.0] - 2024-01-23
+--------------------
+
+### New Features
+
+- feat: add ansible host parameter to insights configuration (#155)
+
+### Other Changes
+
+- tests: temporarily pin Candlepin to 4.4.2 (#159)
+
 [1.4.1] - 2024-01-16
 --------------------
 

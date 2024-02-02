@@ -20,7 +20,7 @@ exclude_paths:
   - .github/
   - .markdownlint.yaml
   - examples/roles/
-mock_roles:
-  - linux-system-roles.rhc
 mock_modules:
   - containers.podman.podman_container
+mock_roles:
+  - linux-system-roles.rhc

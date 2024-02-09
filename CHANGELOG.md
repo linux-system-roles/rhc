@@ -1,6 +1,15 @@
 Changelog
 =========
 
+[1.5.1] - 2024-02-09
+--------------------
+
+### Other Changes
+
+- Revert "tests: temporarily pin Candlepin to 4.4.2" (#161)
+- ci: fix python unit test - copy pytest config to tests/unit (#162)
+- tests: rename tests_insights_ansible_host.yaml (#164)
+
 [1.5.0] - 2024-01-23
 --------------------
 

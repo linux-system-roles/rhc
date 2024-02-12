@@ -1,0 +1,109 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Insights display name test
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Setup Insights
+      import_tasks: tasks/setup_insights.yml
+
+    - name: Test display_name
+      block:
+        - name: Add display_name and register insights
+          include_role:
+            name: linux-system-roles.rhc
+            public: true
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              display_name: name
+              remediation: absent
+              state: present
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+        - name: Check display_name is set to 'name' in config file
+          command:
+            grep -ixq "^display_name=name" {{ __rhc_insights_conf }}
+          changed_when: true
+
+        - name: Test display_name changed value after registration
+          block:
+            - name: Change display name to 'new-name'
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  display_name: new-name
+                  remediation: absent
+            - name: Check display_name is set to 'new-name' in config file
+              command:
+                grep -ixq "^display_name=new-name" {{ __rhc_insights_conf }}
+              changed_when: false
+            - name: Change display name to a null value (noop)
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  display_name: null
+                  remediation: absent
+            - name: Check display_name has not changed in config file
+              command:
+                grep -ixq "^display_name=new-name" {{ __rhc_insights_conf }}
+              changed_when: false
+            - name: Change display name to an empty string (noop)
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  display_name: ""
+                  remediation: absent
+            - name: Check display_name has not changed in config file
+              command:
+                grep -ixq "^display_name=new-name" {{ __rhc_insights_conf }}
+              changed_when: false
+
+        - name: Test display_name is removed during insights unregistration
+          block:
+            - name: Set display_name in config file
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  display_name: unreg-test
+                  remediation: absent
+            - name: Check display_name is set in config file
+              command:
+                grep -ixq "^display_name=unreg-test" {{ __rhc_insights_conf }}
+              changed_when: false
+            - name: Unregister insights to remove display_name in config file
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  state: absent
+            - name: Check display_name is not present in config file
+              lineinfile:
+                path: "{{ __rhc_insights_conf }}"
+                regexp: "^display_name="
+                state: absent
+              check_mode: true
+              register: __test_display_name_removed
+              failed_when: __test_display_name_removed.found
+
+      always:
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent

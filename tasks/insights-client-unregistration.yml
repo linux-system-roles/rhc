@@ -17,3 +17,9 @@
     path: "{{ __rhc_insights_conf }}"
     regexp: "^ansible_host="
     state: absent
+
+- name: Reset display name in config
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^display_name="
+    state: absent

@@ -6,6 +6,7 @@ rhc_environments: []
 rhc_insights:
   ansible_host: null
   autoupdate: true
+  display_name: null
   remediation: present
   state: present
   tags: {}

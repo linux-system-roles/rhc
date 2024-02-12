@@ -175,6 +175,21 @@ Possible values of this variable:
 
 ```yaml
     rhc_insights:
+      display_name: "Example Host"
+```
+
+Configures the display name with a custom value for the system record in Host Based Inventory (HBI). This display name is only used to identify the host in the Inventory.
+It is `null` by default and will use the system host name if not specified.
+
+Possible values of this variable:
+
+* `null` or an empty string: the display name is not changed
+* any other string value: the display name is changed in Host Based Inventory (HBI).
+
+Note: If not set explicitly on registration, the display name is set to the hostname by default. It is not possible to automatically revert it to the hostname, but it can be set so manually.
+
+```yaml
+    rhc_insights:
       remediation: present
 ```
 

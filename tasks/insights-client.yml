@@ -94,6 +94,43 @@
           or "Registered" in __rhc_insights_status.stdout
       changed_when: true
 
+- name: Check display name in insights-client config
+  when:
+    - rhc_insights.display_name is defined
+    - not rhc_insights.display_name is none
+    - rhc_insights.display_name != ""
+    - rhc_insights.display_name != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^display_name="
+    state: present
+    line: display_name={{ rhc_insights.display_name }}
+  check_mode: true
+  register: __insights_display_name_exists
+
+- name: Configure display name
+  when:
+    - rhc_insights.display_name is defined
+    - not rhc_insights.display_name is none
+    - rhc_insights.display_name != ""
+    - rhc_insights.display_name != omit
+    - __insights_display_name_exists.changed
+  block:
+    - name: Update display name in insights-client config
+      lineinfile:
+        path: "{{ __rhc_insights_conf }}"
+        regexp: "^display_name="
+        insertafter: "#display_name="
+        line: display_name={{ rhc_insights.display_name }}
+    - name: Update display name in inventory
+      shell: >-
+        insights-client --display-name={{ rhc_insights.display_name }} & wait
+      when:
+        - >-
+          "This host is registered" in __rhc_insights_status.stdout
+          or "Registered" in __rhc_insights_status.stdout
+      changed_when: true
+
 - name: Register insights-client
   shell: insights-client --register & wait
   when:

@@ -61,6 +61,17 @@
               command:
                 grep -ixq "^ansible_host=new-host" {{ __rhc_insights_conf }}
               changed_when: false
+            - name: Change ansible host to an empty string (noop)
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_insights:
+                  ansible_host: ""
+                  remediation: absent
+            - name: Check ansible_host has not changed in config file
+              command:
+                grep -ixq "^ansible_host=new-host" {{ __rhc_insights_conf }}
+              changed_when: false
 
         - name: Test ansible_host set to an absent value
           block:

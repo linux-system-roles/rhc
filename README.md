@@ -169,7 +169,7 @@ It is `null` by default and will use the system host name if not specified.
 
 Possible values of this variable:
 
-* `null` or an empty value: the ansible host name is not changed.
+* `null` or an empty string: the ansible host name is not changed.
 * `{state: absent}`: the ansible host name is unset in the insights-client config file and Host Based Inventory (HBI) is updated to use the system host name.
 * any other string value: the ansible host name is changed in Host Based Inventory (HBI).
 

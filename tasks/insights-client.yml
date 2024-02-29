@@ -42,6 +42,7 @@
   when:
     - rhc_insights.ansible_host is defined
     - not rhc_insights.ansible_host is none
+    - rhc_insights.ansible_host != ""
     - rhc_insights.ansible_host != __rhc_state_absent
     - rhc_insights.ansible_host != omit
   lineinfile:
@@ -56,6 +57,7 @@
   when:
     - rhc_insights.ansible_host is defined
     - not rhc_insights.ansible_host is none
+    - rhc_insights.ansible_host != ""
     - rhc_insights.ansible_host != omit
     - rhc_insights.ansible_host != __rhc_state_absent
     - __insights_ansible_host_exists.changed

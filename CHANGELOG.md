@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.6.2] - 2024-04-04
+--------------------
+
+### Other Changes
+
+- chore: Fix indentation in CHANGELOG (#172)
+
 [1.6.1] - 2024-04-02
 --------------------
 

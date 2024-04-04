@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.6.3] - 2024-04-04
+--------------------
+
+### Other Changes
+
+- chore: I added PR description to changelog by mistake (#174)
+
 [1.6.2] - 2024-04-04
 --------------------
 
@@ -117,7 +124,6 @@ Changelog
   
   Signed-off-by: Sergei Petrosian <spetrosi@redhat.com>
 
-
 [1.2.5] - 2023-09-07
 --------------------
 
@@ -150,7 +156,6 @@ Changelog
   - Remove badges from README.md prior to converting to HTML
   
   Signed-off-by: Sergei Petrosian <spetrosi@redhat.com>
-
 
 [1.2.4] - 2023-07-31
 --------------------
@@ -192,7 +197,6 @@ Changelog
   Wrap a couple of Insights tests into blocks, so it is possible to always ensure the unregistration at the end of the tests, even in case of failure.
   
   There should be no behaviour change w.r.t. what the tests themselves check.
-
 
 [1.2.1] - 2023-06-06
 --------------------

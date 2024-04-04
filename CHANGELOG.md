@@ -15,24 +15,9 @@ Changelog
 
 - fix: Ignore ansible_host: "" (#169)
 
-  Enhancement: Ignoring  _rhc.ansible_host_ if set to an empty string.
-
-  Reason: The empty string value causes:
-
-  - the Ansible host name to be reset in the Inventory by `insights-client --ansible_host=`;
-  - a line `ansible_host=` to be put in the config file.
-
-  The former is a job of `{state: absent}`. An empty string should not cause such a desctructive operation. The latter is ignored by the Client and is equivatent to that line missing.
-
-  Result:
-  Consistently with a similar condition of the display_name parameter, an empty string ansible_host is treated as undefined. It's the same behavior as with a null value.
-
-  Issue Tracker Tickets (Jira or BZ if any): https://issues.redhat.com/browse/CCT-398
-
 ### Other Changes
 
 - ci: Bump ansible/ansible-lint from 6 to 24 (#168)
-
 - ci: Bump mathieudutour/github-tag-action from 6.1 to 6.2 (#170)
 
 [1.6.0] - 2024-02-21

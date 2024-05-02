@@ -5,10 +5,21 @@ rhc_baseurl: null
 rhc_environments: []
 rhc_insights:
   ansible_host: null
+  authmethod: BASIC
+  autoconfig: true
   autoupdate: true
+  baseurl: "cert-api.access.redhat.com:443/r/insights"
+  content_redaction_file: " /etc/insights-client/file-content-redaction.yaml"
   display_name: null
+  loglevel: DEFAULT
+  obfuscate: false
+  obfuscate_hostname: false
+  password: null
+  redaction_file: "/etc/insights-client/file-redaction.yaml"
   remediation: present
   state: present
+  tags_file: "/etc/insights-client/tags.yaml"
+  username: null
   tags: {}
 rhc_organization: null
 rhc_proxy: {}

@@ -38,6 +38,137 @@
     insertafter: "#auto_update"
     line: auto_update={{ rhc_insights.autoupdate | d(true) | bool }}
 
+- name: Configure authmethod
+  when:
+    - rhc_insights.authmethod is defined
+    - not rhc_insights.authmethod is none
+    - rhc_insights.authmethod != ""
+    - rhc_insights.authmethod != __rhc_state_absent
+    - rhc_insights.authmethod != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^authmethod="
+    state: present
+    line: authmethod={{ rhc_insights.authmethod }}
+  check_mode: true
+
+- name: Configure username for authmethod BASIC
+  when:
+    - rhc_insights.authmethod = "BASIC"
+    - rhc_insights.authmethod != __rhc_state_absent
+    - rhc_insights.username is defined
+    - not rhc_insights.username is none
+    - rhc_insights.username != ""
+    - rhc_insights.username != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^username="
+    state: present
+    line: username={{ rhc_insights.username }}
+  check_mode: true
+
+- name: Configure password for authmethod BASIC
+  when:
+    - rhc_insights.authmethod == "BASIC"
+    - rhc_insights.authmethod != __rhc_state_absent
+    - rhc_insights.password is defined
+    - not rhc_insights.password is none
+    - rhc_insights.password != ""
+    - rhc_insights.password != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^password="
+    state: present
+    line: password={{ rhc_insights.password }}
+  check_mode: true
+
+- name: Configure Base URL for the Insights API
+  when:
+    - rhc_insights.baseurl is defined
+    - not rhc_insights.baseurl is none
+    - rhc_insights.baseurl != ""
+    - rhc_insights.baseurl != __rhc_state_absent
+    - rhc_insights.baseurl != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^base_url="
+    state: present
+    line: base_url={{ rhc_insights.baseurl }}
+  check_mode: true
+
+- name: Configure IP address obfuscation
+  when:
+    - rhc_insights.obfuscate is defined
+    - not rhc_insights.obfuscate is none
+    - rhc_insights.obfuscate != ""
+    - rhc_insights.obfuscate != __rhc_state_absent
+    - rhc_insights.obfuscate != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^obfuscate="
+    state: present
+    line: obfuscate={{ rhc_insights.obfuscate }}
+  check_mode: true
+
+- name: Configure hostname obfuscation
+  when:
+    - rhc_insights.obfuscate == "true"
+    - rhc_insights.hostname_obfuscate is defined
+    - not rhc_insights.hostname_obfuscate is none
+    - rhc_insights.hostname_obfuscate != ""
+    - rhc_insights.hostname_obfuscate != __rhc_state_absent
+    - rhc_insights.hostname_obfuscate != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^hostname_obfuscate="
+    state: present
+    line: hostname_obfuscate={{ rhc_insights.hostname_obfuscate }}
+  check_mode: true
+
+- name: >-
+    Configure location of the redaction file for commands, files, and 
+    components
+  when:
+    - rhc_insights.redaction_file is defined
+    - not rhc_insights.redaction_file is none
+    - rhc_insights.redaction_file != ""
+    - rhc_insights.redaction_file != __rhc_state_absent
+    - rhc_insights.redaction_file != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^redaction_file="
+    state: present
+    line: redaction_file={{ rhc_insights.redaction_file }}
+  check_mode: true
+
+- name: Configure location of the redaction file for patterns and keywords
+  when:
+    - rhc_insights.content_redaction_file is defined
+    - not rhc_insights.content_redaction_file is none
+    - rhc_insights.content_redaction_file != ""
+    - rhc_insights.content_redaction_file != __rhc_state_absent
+    - rhc_insights.content_redaction_file != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^content_redaction_file="
+    state: present
+    line: content_redaction_file={{ rhc_insights.content_redaction_file }}
+  check_mode: true
+
+- name: Configure location of the tags file
+  when:
+    - rhc_insights.tags_file is defined
+    - not rhc_insights.tags_file is none
+    - rhc_insights.tags_file != ""
+    - rhc_insights.tags_file != __rhc_state_absent
+    - rhc_insights.tags_file != omit
+  lineinfile:
+    path: "{{ __rhc_insights_conf }}"
+    regexp: "^tags_file="
+    state: present
+    line: tags_file={{ rhc_insights.tags_file }}
+  check_mode: true
+
 - name: Check ansible host in insights-client config
   when:
     - rhc_insights.ansible_host is defined

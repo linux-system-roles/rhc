@@ -152,6 +152,25 @@ Whether the system is connected to Insights; valid values are `present`
 
 ```yaml
     rhc_insights:
+      authmethod: BASIC
+      username: null
+      password: null
+```
+
+Configures the authentication method; valid options for `authmethod` are `BASIC`
+(the default), and `CERT`. The variables `username` and `password` configure
+username and password when authmethod is `BASIC`.
+
+```yaml
+    rhc_insights:
+      autoconfig: true
+```
+
+Whether the system attempts to auto configure with Satellite server, values
+are `true` (the default), and `false`.
+
+```yaml
+    rhc_insights:
       autoupdate: true
 ```
 
@@ -174,6 +193,28 @@ Possible values of this variable:
 * any other string value: the ansible host name is changed in Host Based Inventory (HBI).
 
 ```yaml
+    rhc_inights:
+      baseurl: "cert-api.access.redhat.com:443/r/insights"
+```
+
+Configures the Base URL for the Insights API.
+Defaults to "cert-api.access.redhat.com:443/r/insights".
+
+```yaml
+    rhc_insights:
+      redaction_file: "/etc/insights-client/file-redaction.yaml"
+```
+
+Sets the location of the redaction file for commands, files, and components.
+
+```yaml
+    rhc_insights:
+      content_redaction_file: "/etc/insights-client/file-content-redaction.yaml"
+```
+
+Sets the location of the redaction file for patterns and keywords.
+
+```yaml
     rhc_insights:
       display_name: "Example Host"
 ```
@@ -187,6 +228,29 @@ Possible values of this variable:
 * any other string value: the display name is changed in Host Based Inventory (HBI).
 
 Note: If not set explicitly on registration, the display name is set to the hostname by default. It is not possible to automatically revert it to the hostname, but it can be set so manually.
+
+```yaml
+    rhc_insights:
+      loglevel: DEFAULT
+```
+
+Configures the log level; valid options are DEBUG (the default), INFO, WARNING, ERROR, CRITICAL.
+
+```yaml
+    rhc_insights:
+      obfuscate: false
+```
+
+Configures IP address obfuscation; valid values are `false` (the default),
+and `false`.
+
+```yaml
+    rhc_insights:
+      obfuscate_hostname: false
+```
+
+Configures hostname obfuscation; valid values are `false` (the default),
+and `false`. Requires `obfuscate: true`.
 
 ```yaml
     rhc_insights:
@@ -233,6 +297,13 @@ rhc_insights:
       - SAP
     key 4: value
 ```
+
+```yaml
+    rhc_insights:
+      tags_file: "/etc/insights-client/tags.yaml"
+```
+
+Configures the location of the tags file.
 
 ```yaml
     rhc_proxy: {}

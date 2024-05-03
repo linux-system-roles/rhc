@@ -126,7 +126,7 @@
   check_mode: true
 
 - name: >-
-    Configure location of the redaction file for commands, files, and 
+    Configure location of the redaction file for commands, files, and
     components
   when:
     - rhc_insights.redaction_file is defined

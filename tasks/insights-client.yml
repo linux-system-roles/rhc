@@ -40,47 +40,50 @@
 
 - name: Configure authmethod
   when:
-    - rhc_insights.authmethod is defined
-    - not rhc_insights.authmethod is none
-    - rhc_insights.authmethod != ""
-    - rhc_insights.authmethod != __rhc_state_absent
-    - rhc_insights.authmethod != omit
+    - rhc_insights_auth.authmethod is defined
+    - not rhc_insights_auth.authmethod is none
+    - rhc_insights_auth.authmethod != ""
+    - rhc_insights_auth.authmethod != __rhc_state_absent
+    - rhc_insights_auth.authmethod != omit
   lineinfile:
     path: "{{ __rhc_insights_conf }}"
     regexp: "^authmethod="
     state: present
-    line: authmethod={{ rhc_insights.authmethod }}
+    line: authmethod={{ rhc_insights_auth.authmethod }}
   check_mode: true
+  no_log: true
 
 - name: Configure username for authmethod BASIC
   when:
-    - rhc_insights.authmethod = "BASIC"
-    - rhc_insights.authmethod != __rhc_state_absent
-    - rhc_insights.username is defined
-    - not rhc_insights.username is none
-    - rhc_insights.username != ""
-    - rhc_insights.username != omit
+    - rhc_insights_auth.authmethod = "BASIC"
+    - rhc_insights_auth.authmethod != __rhc_state_absent
+    - rhc_insights_auth.username is defined
+    - not rhc_insights_auth.username is none
+    - rhc_insights_auth.username != ""
+    - rhc_insights_auth.username != omit
   lineinfile:
     path: "{{ __rhc_insights_conf }}"
     regexp: "^username="
     state: present
-    line: username={{ rhc_insights.username }}
+    line: username={{ rhc_insights_auth.username }}
   check_mode: true
+  no_log: true
 
 - name: Configure password for authmethod BASIC
   when:
-    - rhc_insights.authmethod == "BASIC"
-    - rhc_insights.authmethod != __rhc_state_absent
-    - rhc_insights.password is defined
-    - not rhc_insights.password is none
-    - rhc_insights.password != ""
-    - rhc_insights.password != omit
+    - rhc_insights_auth.authmethod == "BASIC"
+    - rhc_insights_auth.authmethod != __rhc_state_absent
+    - rhc_insights_auth.password is defined
+    - not rhc_insights_auth.password is none
+    - rhc_insights_auth.password != ""
+    - rhc_insights_auth.password != omit
   lineinfile:
     path: "{{ __rhc_insights_conf }}"
     regexp: "^password="
     state: present
-    line: password={{ rhc_insights.password }}
+    line: password={{ rhc_insights_auth.password }}
   check_mode: true
+  no_log: true
 
 - name: Configure Base URL for the Insights API
   when:

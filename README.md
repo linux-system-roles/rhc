@@ -151,7 +151,7 @@ Whether the system is connected to Insights; valid values are `present`
 (the default, to ensure connection), and `absent`.
 
 ```yaml
-    rhc_insights:
+    rhc_insights_auth:
       authmethod: BASIC
       username: null
       password: null

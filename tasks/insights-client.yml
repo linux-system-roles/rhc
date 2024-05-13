@@ -128,36 +128,6 @@
     line: hostname_obfuscate={{ rhc_insights.hostname_obfuscate }}
   check_mode: true
 
-- name: >-
-    Configure location of the redaction file for commands, files, and
-    components
-  when:
-    - rhc_insights.redaction_file is defined
-    - not rhc_insights.redaction_file is none
-    - rhc_insights.redaction_file != ""
-    - rhc_insights.redaction_file != __rhc_state_absent
-    - rhc_insights.redaction_file != omit
-  lineinfile:
-    path: "{{ __rhc_insights_conf }}"
-    regexp: "^redaction_file="
-    state: present
-    line: redaction_file={{ rhc_insights.redaction_file }}
-  check_mode: true
-
-- name: Configure location of the redaction file for patterns and keywords
-  when:
-    - rhc_insights.content_redaction_file is defined
-    - not rhc_insights.content_redaction_file is none
-    - rhc_insights.content_redaction_file != ""
-    - rhc_insights.content_redaction_file != __rhc_state_absent
-    - rhc_insights.content_redaction_file != omit
-  lineinfile:
-    path: "{{ __rhc_insights_conf }}"
-    regexp: "^content_redaction_file="
-    state: present
-    line: content_redaction_file={{ rhc_insights.content_redaction_file }}
-  check_mode: true
-
 - name: Configure location of the tags file
   when:
     - rhc_insights.tags_file is defined

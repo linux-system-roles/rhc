@@ -202,20 +202,6 @@ Defaults to "cert-api.access.redhat.com:443/r/insights".
 
 ```yaml
     rhc_insights:
-      redaction_file: "/etc/insights-client/file-redaction.yaml"
-```
-
-Sets the location of the redaction file for commands, files, and components.
-
-```yaml
-    rhc_insights:
-      content_redaction_file: "/etc/insights-client/file-content-redaction.yaml"
-```
-
-Sets the location of the redaction file for patterns and keywords.
-
-```yaml
-    rhc_insights:
       display_name: "Example Host"
 ```
 

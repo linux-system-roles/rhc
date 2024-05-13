@@ -8,12 +8,10 @@ rhc_insights:
   autoconfig: true
   autoupdate: true
   baseurl: "cert-api.access.redhat.com:443/r/insights"
-  content_redaction_file: "/etc/insights-client/file-content-redaction.yaml"
   display_name: null
   loglevel: DEFAULT
   obfuscate: false
   obfuscate_hostname: false
-  redaction_file: "/etc/insights-client/file-redaction.yaml"
   remediation: present
   state: present
   tags_file: "/etc/insights-client/tags.yaml"

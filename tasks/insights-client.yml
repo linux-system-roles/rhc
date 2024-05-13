@@ -128,20 +128,6 @@
     line: hostname_obfuscate={{ rhc_insights.hostname_obfuscate }}
   check_mode: true
 
-- name: Configure location of the tags file
-  when:
-    - rhc_insights.tags_file is defined
-    - not rhc_insights.tags_file is none
-    - rhc_insights.tags_file != ""
-    - rhc_insights.tags_file != __rhc_state_absent
-    - rhc_insights.tags_file != omit
-  lineinfile:
-    path: "{{ __rhc_insights_conf }}"
-    regexp: "^tags_file="
-    state: present
-    line: tags_file={{ rhc_insights.tags_file }}
-  check_mode: true
-
 - name: Check ansible host in insights-client config
   when:
     - rhc_insights.ansible_host is defined

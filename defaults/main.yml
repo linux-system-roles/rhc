@@ -14,7 +14,6 @@ rhc_insights:
   obfuscate_hostname: false
   remediation: present
   state: present
-  tags_file: "/etc/insights-client/tags.yaml"
   tags: {}
 rhc_insights_auth:
   authmethod: BASIC

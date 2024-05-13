@@ -285,13 +285,6 @@ rhc_insights:
 ```
 
 ```yaml
-    rhc_insights:
-      tags_file: "/etc/insights-client/tags.yaml"
-```
-
-Configures the location of the tags file.
-
-```yaml
     rhc_proxy: {}
 ```
 

@@ -223,6 +223,46 @@
           or "Registered" in __rhc_insights_status.stdout
       changed_when: true
 
+- name: Configure file redaction
+  when: (rhc_insights.file_redaction.commands is defined) or
+        (rhc_insights.file_redaction.files is defined) or
+        (rhc_insights.file_redaction.components is defined)
+  block:
+    - name: Create file-redaction.yaml from template
+      template:
+        src: templates/file-redaction.yaml.j2
+        dest: /etc/insights-client/file-redaction.yaml
+        owner: root
+        group: root
+        mode: 0660
+    - name: Configure path to file-redaction.yaml in insights-client.conf
+      lineinfile:
+        path: "{{ __rhc_insights_conf }}"
+        regexp: "^redaction_file="
+        insertafter: "#redaction_file="
+        line: redaction_file=/etc/insights-client/file-redaction.yaml
+
+- name: Configure file content redaction
+  when: (rhc_insights.file_content_redaction.keywords is defined) or
+        (rhc_insights.file_content_redaction.patterns is defined) or
+        (rhc_insights.file_content_redaction.regex_patterns is defined)
+  block:
+    - name: Create file-content-redaction.yaml from template
+      template:
+        src: templates/file-content-redaction.yaml.j2
+        dest: /etc/insights-client/file-content-redaction.yaml
+        owner: root
+        group: root
+        mode: 0660
+    - name: Configure path to file-redaction.yaml in insights-client.conf
+      lineinfile:
+        path: "{{ __rhc_insights_conf }}"
+        regexp: "^content_redaction_file="
+        insertafter: "#content_redaction_file="
+        line: >-
+          "content_redaction_file=/etc/insights-client/
+          file-content-redaction.yaml"
+
 - name: Register insights-client
   shell: insights-client --register & wait
   when:

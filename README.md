@@ -217,6 +217,33 @@ Note: If not set explicitly on registration, the display name is set to the host
 
 ```yaml
     rhc_insights:
+      file_redaction:
+        commands: []
+        files: []
+        components: []
+```
+
+Specify lists of commands, files, and components to obmit from output
+
+```yaml
+    rhc_insights:
+      file_redaction:
+        commands: []
+        files: []
+        components: []
+      file_content_redaction:
+        keywords: []
+        patterns: []
+        regex_patterns: []
+```
+
+These are optional.
+Specify lists of commands, files, components, keywords and patterns to obmit from output.
+NOTE: You cannot mix plain string matching and regular expression matching.
+For more informaition on this topic read: [YAML-style denylist configuration for Red Hat Insights Client](https://access.redhat.com/articles/4511681).
+
+```yaml
+    rhc_insights:
       loglevel: DEFAULT
 ```
 

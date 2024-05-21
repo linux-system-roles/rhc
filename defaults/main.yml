@@ -9,6 +9,14 @@ rhc_insights:
   autoupdate: true
   baseurl: "cert-api.access.redhat.com:443/r/insights"
   display_name: null
+  file_redaction:
+    commands: []
+    files: []
+    components: []
+  file_content_redaction:
+    keywords: []
+    patterns: []
+    regex_patterns: []
   loglevel: DEFAULT
   obfuscate: false
   obfuscate_hostname: false

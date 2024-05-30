@@ -193,7 +193,7 @@ Possible values of this variable:
 * any other string value: the ansible host name is changed in Host Based Inventory (HBI).
 
 ```yaml
-    rhc_inights:
+    rhc_insights:
       baseurl: "cert-api.access.redhat.com:443/r/insights"
 ```
 
@@ -223,7 +223,7 @@ Note: If not set explicitly on registration, the display name is set to the host
         components: []
 ```
 
-Specify lists of commands, files, and components to obmit from output
+Specify lists of commands, files, and components to omit from output
 
 ```yaml
     rhc_insights:
@@ -238,9 +238,9 @@ Specify lists of commands, files, and components to obmit from output
 ```
 
 These are optional.
-Specify lists of commands, files, components, keywords and patterns to obmit from output.
+Specify lists of commands, files, components, keywords and patterns to omit from output.
 NOTE: You cannot mix plain string matching and regular expression matching.
-For more informaition on this topic read: [YAML-style denylist configuration for Red Hat Insights Client](https://access.redhat.com/articles/4511681).
+For more information on this topic read: [YAML-style denylist configuration for Red Hat Insights Client](https://access.redhat.com/articles/4511681).
 
 ```yaml
     rhc_insights:
@@ -255,7 +255,7 @@ Configures the log level; valid options are DEBUG (the default), INFO, WARNING, 
 ```
 
 Configures IP address obfuscation; valid values are `false` (the default),
-and `false`.
+and `true`.
 
 ```yaml
     rhc_insights:
@@ -263,7 +263,7 @@ and `false`.
 ```
 
 Configures hostname obfuscation; valid values are `false` (the default),
-and `false`. Requires `obfuscate: true`.
+and `true`. Requires `obfuscate: true`.
 
 ```yaml
     rhc_insights:

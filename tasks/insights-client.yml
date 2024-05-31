@@ -89,7 +89,6 @@
   when:
     - rhc_insights.baseurl is defined
     - not rhc_insights.baseurl is none
-    - not rhc_insights.baseurl is null
     - rhc_insights.baseurl != ""
     - rhc_insights.baseurl != __rhc_state_absent
     - rhc_insights.baseurl != omit

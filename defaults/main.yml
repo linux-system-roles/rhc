@@ -7,7 +7,7 @@ rhc_insights:
   ansible_host: null
   autoconfig: true
   autoupdate: true
-  baseurl: "cert-api.access.redhat.com:443/r/insights"
+  baseurl: null
   display_name: null
   file_redaction:
     commands: []

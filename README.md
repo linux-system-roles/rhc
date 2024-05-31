@@ -194,11 +194,11 @@ Possible values of this variable:
 
 ```yaml
     rhc_insights:
-      baseurl: "cert-api.access.redhat.com:443/r/insights"
+      baseurl: null
 ```
 
 Configures the Base URL for the Insights API.
-Defaults to "cert-api.access.redhat.com:443/r/insights".
+If `baseurl: null` is set, the default of the `insights-client` will be used.
 
 ```yaml
     rhc_insights:

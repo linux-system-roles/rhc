@@ -23,7 +23,7 @@
         src: /etc/squid/squid.conf
         dest: /etc/squid/squid.conf.BACKUP
         remote_src: true
-        mode: 0644
+        mode: "0644"
       when:
         - not squid_conf_backup_stat.stat.exists
 
@@ -32,7 +32,7 @@
         src: /etc/squid/squid.conf.BACKUP
         dest: /etc/squid/squid.conf
         remote_src: true
-        mode: 0644
+        mode: "0644"
       when:
         - squid_conf_backup_stat.stat.exists
 

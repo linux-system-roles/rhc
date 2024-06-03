@@ -55,7 +55,7 @@
       file:
         path: "{{ item }}"
         state: directory
-        mode: 0755
+        mode: "0755"
       loop:
         - /etc/pki/product
         - /etc/pki/product-default
@@ -111,7 +111,7 @@
       get_url:
         url: "http://{{ lsr_rhc_test_data.candlepin_host }}:8080/RPM-GPG-KEY-candlepin"  # yamllint disable-line
         dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
-        mode: 0644
+        mode: "0644"
 
     - name: Query for default_key activation key
       uri:

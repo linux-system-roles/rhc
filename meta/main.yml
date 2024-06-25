@@ -4,21 +4,20 @@ galaxy_info:
   author: Pino Toscano <ptoscano@redhat.com>
   description: Configure connectivity of systems to Red Hat
   company: Red Hat, Inc.
-
   license: MIT
-
   min_ansible_version: "2.9"
-
   platforms:
     - name: EL
       versions:
         - "7"
         - "8"
         - "9"
-
   galaxy_tags:
-    - subscription
+    - el7
+    - el8
+    - el9
+    - el10
     - insights
     - rhsm
-
+    - subscription
 dependencies: []

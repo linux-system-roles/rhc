@@ -40,9 +40,6 @@
     server_prefix: "{{ rhc_server.prefix | d(omit) }}"
     server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
       else rhc_server.insecure | ternary('1', '0') }}"
-    auto_attach: "{{ true
-      if (rhc_state | d('present') in ['present', 'reconnect']
-          and not 'keys' in rhc_auth.activation_keys | d({})) else omit }}"
     release: "{{ rhc_release
       if (rhc_state | d('present') != 'absent'
            and rhc_release != __rhc_state_absent

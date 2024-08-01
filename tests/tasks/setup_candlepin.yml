@@ -18,6 +18,10 @@
       set_fact:
         _cp_url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
 
+    - name: Set helper fact for Candlepin owner URL
+      set_fact:
+        _cp_url_owner: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_organization }}"  # yamllint disable-line
+
     - name: Add candlepin hostname to /etc/hosts
       lineinfile:
         path: /etc/hosts
@@ -115,7 +119,7 @@
 
     - name: Query for default_key activation key
       uri:
-        url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/activation_keys?name={{ lsr_rhc_test_data.reg_activation_keys[0] }}"  # yamllint disable-line
+        url: "{{ _cp_url_owner }}/activation_keys?name={{ lsr_rhc_test_data.reg_activation_keys[0] }}"  # yamllint disable-line
         method: GET
         url_username: "{{ lsr_rhc_test_data.reg_username }}"
         url_password: "{{ lsr_rhc_test_data.reg_password }}"
@@ -123,7 +127,7 @@
 
     - name: Get pools for product 5050
       uri:
-        url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/pools?product=5050"  # yamllint disable-line
+        url: "{{ _cp_url_owner }}/pools?product=5050"
         method: GET
         url_username: "{{ lsr_rhc_test_data.reg_username }}"
         url_password: "{{ lsr_rhc_test_data.reg_password }}"
@@ -143,7 +147,7 @@
       block:
         - name: Add environments
           uri:
-            url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/environments"  # yamllint disable-line
+            url: "{{ _cp_url_owner }}/environments"
             method: POST
             url_username: "{{ lsr_rhc_test_data.reg_username }}"
             url_password: "{{ lsr_rhc_test_data.reg_password }}"

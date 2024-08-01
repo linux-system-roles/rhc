@@ -92,7 +92,7 @@
           - /etc/pki/product-default/
       changed_when: false
       loop:
-        - "5050"
+        - "7050"
 
     - name: Copy Candlepin CA certificate for subscription-manager
       command:
@@ -143,15 +143,15 @@
         url_password: "{{ lsr_rhc_test_data.reg_password }}"
       register: default_key
 
-    - name: Get pools for product 5050
+    - name: Get pools for product 7050
       uri:
-        url: "{{ _cp_url_owner }}/pools?product=5050"
+        url: "{{ _cp_url_owner }}/pools?product=7050"
         method: GET
         url_username: "{{ lsr_rhc_test_data.reg_username }}"
         url_password: "{{ lsr_rhc_test_data.reg_password }}"
       register: pools
 
-    - name: Add pools for product 5050 to default_key activation key
+    - name: Add pools for product 7050 to default_key activation key
       uri:
         url: "{{ _cp_url }}/activation_keys/{{ default_key.json[0].id }}/pools/{{ item.id }}"  # yamllint disable-line
         method: POST

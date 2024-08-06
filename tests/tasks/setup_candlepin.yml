@@ -37,23 +37,41 @@
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
     - name: Stop and remove Candlepin container
-      containers.podman.podman_container:
-        name: candlepin
-        state: absent
+      command:
+        argv:
+          - podman
+          - stop
+          - candlepin
+      register: podman_stop_status
+      failed_when:
+        - podman_stop_status.rc != 0
+        - '"no such container" not in podman_stop_status.stderr'
+      changed_when: false
 
     - name: Start Candlepin container
-      containers.podman.podman_container:
-        detach: true
-        hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
-        image: ghcr.io/ptoscano/candlepin-unofficial
-        name: candlepin
-        privileged: "{{ ansible_distribution in ['CentOS', 'RedHat']
-          and ansible_distribution_major_version | int < 8 }}"
-        publish:
+      vars:
+        podman_run_cli:
+          - podman
+          - run
+          - --rm
+          - --detach
+          - --hostname
+          - "{{ lsr_rhc_test_data.candlepin_host }}"
+          - --name
+          - candlepin
+          - --publish
           - 8443:8443
+          - --publish
           - 8080:8080
-        rm: true
-        state: started
+          - "{{ '--privileged'
+            if (ansible_distribution in ['CentOS', 'RedHat']
+                and ansible_distribution_major_version | int < 8)
+            else '' }}"
+          - ghcr.io/ptoscano/candlepin-unofficial
+      command:
+        argv:
+          "{{ podman_run_cli | reject('match', '^$') | list }}"
+      changed_when: false
 
     - name: Ensure directories exist
       file:

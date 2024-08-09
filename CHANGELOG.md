@@ -1,6 +1,24 @@
 Changelog
 =========
 
+[1.6.6] - 2024-08-09
+--------------------
+
+### Bug Fixes
+
+- fix: drop usage of "auto_attach" of the "redhat_subscription" module (#189)
+
+### Other Changes
+
+- ci: Add tft plan and workflow (#187)
+- ci: Update fmf plan to add a separate job to prepare managed nodes (#190)
+- tests: factorize & fix URL for candlepin owner (#191)
+- ci: Bump sclorg/testing-farm-as-github-action from 2 to 3 (#192)
+- ci: Add workflow for ci_test bad, use remote fmf plan (#193)
+- ci: Fix missing slash in ARTIFACTS_URL (#194)
+- tests: switch to an SCA account for Candlepin (#195)
+- tests: run podman directly instead of using containers.podman (#196)
+
 [1.6.5] - 2024-07-02
 --------------------
 

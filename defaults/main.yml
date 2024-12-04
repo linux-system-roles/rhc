@@ -5,11 +5,28 @@ rhc_baseurl: null
 rhc_environments: []
 rhc_insights:
   ansible_host: null
+  autoconfig: true
   autoupdate: true
+  baseurl: null
   display_name: null
+  file_redaction:
+    commands: []
+    files: []
+    components: []
+  file_content_redaction:
+    keywords: []
+    patterns: []
+    regex_patterns: []
+  loglevel: DEFAULT
+  obfuscate: false
+  obfuscate_hostname: false
   remediation: present
   state: present
   tags: {}
+rhc_insights_auth:
+  authmethod: BASIC
+  password: null
+  username: null
 rhc_organization: null
 rhc_proxy: {}
 rhc_release: null

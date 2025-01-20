@@ -135,31 +135,6 @@
         dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
         mode: "0644"
 
-    - name: Query for default_key activation key
-      uri:
-        url: "{{ _cp_url_owner }}/activation_keys?name={{ lsr_rhc_test_data.reg_activation_keys[0] }}"  # yamllint disable-line
-        method: GET
-        url_username: "{{ lsr_rhc_test_data.reg_username }}"
-        url_password: "{{ lsr_rhc_test_data.reg_password }}"
-      register: default_key
-
-    - name: Get pools for product 7050
-      uri:
-        url: "{{ _cp_url_owner }}/pools?product=7050"
-        method: GET
-        url_username: "{{ lsr_rhc_test_data.reg_username }}"
-        url_password: "{{ lsr_rhc_test_data.reg_password }}"
-      register: pools
-
-    - name: Add pools for product 7050 to default_key activation key
-      uri:
-        url: "{{ _cp_url }}/activation_keys/{{ default_key.json[0].id }}/pools/{{ item.id }}"  # yamllint disable-line
-        method: POST
-        url_username: "{{ lsr_rhc_test_data.reg_username }}"
-        url_password: "{{ lsr_rhc_test_data.reg_password }}"
-      loop:
-        "{{ pools.json }}"
-
     - name: Configure environments
       when: environments | d(false)
       block:

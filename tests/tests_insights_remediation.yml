@@ -25,6 +25,7 @@
         - name: Register insights and enable remediation
           include_role:
             name: linux-system-roles.rhc
+            public: true
           vars:
             rhc_auth:
               login:
@@ -41,14 +42,18 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
+        - name: Set the fact for the systemd service
+          set_fact:
+            yggdrasil_systemd_service: "{{ __rhc_yggdrasil_systemd_service + '.service' }}"
+
         - name: Get service_facts
           service_facts:
 
         - name: Check remediation is enabled
           assert:
             that:
-              - "'rhcd.service' in ansible_facts.services"
-              - ansible_facts.services['rhcd.service'].status == 'enabled'
+              - yggdrasil_systemd_service in ansible_facts.services
+              - ansible_facts.services[yggdrasil_systemd_service].status == 'enabled'
 
         - name: Disable remediation
           include_role:
@@ -63,8 +68,8 @@
         - name: Check remediation is disabled
           assert:
             that:
-              - "'rhcd.service' in ansible_facts.services"
-              - ansible_facts.services['rhcd.service'].status == 'disabled'
+              - yggdrasil_systemd_service in ansible_facts.services
+              - ansible_facts.services[yggdrasil_systemd_service].status == 'disabled'
 
         - name: Disable remediation (noop)
           include_role:

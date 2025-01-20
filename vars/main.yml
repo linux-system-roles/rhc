@@ -25,6 +25,13 @@ __rhc_insights_conf: "/etc/insights-client/insights-client.conf"
 
 __rhc_insights_tags: "/etc/insights-client/tags.yaml"
 
+# name of the rhcd/yggdrasil systemd service that maintains the mqtt connection
+# to Insights, used for remediations; starting from EL 10 the service is the
+# upstream one, and no more the downstream-branded one
+__rhc_yggdrasil_systemd_service: "{{ 'yggdrasil'
+  if (ansible_distribution_major_version | int >= 10)
+  else 'rhcd' }}"
+
 # BEGIN - DO NOT EDIT THIS BLOCK - rh distros variables
 # Ansible distribution identifiers that the role treats like RHEL
 __rhc_rh_distros:

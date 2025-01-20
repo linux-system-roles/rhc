@@ -173,13 +173,13 @@
       systemd:
         enabled: true
         state: started
-        name: rhcd
+        name: "{{ __rhc_yggdrasil_systemd_service }}"
 
 - name: Disable remediation
   systemd:
     enabled: false
     state: stopped
-    name: rhcd
+    name: "{{ __rhc_yggdrasil_systemd_service }}"
   when:
     - rhc_insights.remediation | d("present") == "absent"
     - '"rhc" in ansible_facts.packages'

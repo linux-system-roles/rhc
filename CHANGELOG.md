@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.6.9] - 2025-01-27
+--------------------
+
+### Bug Fixes
+
+- fix: use the right systemd service for remediations in EL 10+ (#209)
+
+### Other Changes
+
+- tests: stop adding pools to the activation key (#210)
+
 [1.6.8] - 2025-01-09
 --------------------
 

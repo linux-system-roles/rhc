@@ -20,8 +20,6 @@ exclude_paths:
   - .github/
   - .markdownlint.yaml
   - examples/roles/
-mock_modules:
-  - containers.podman.podman_container
 mock_roles:
   - linux-system-roles.rhc
 supported_ansible_also:

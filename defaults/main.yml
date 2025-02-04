@@ -10,6 +10,7 @@ rhc_insights:
   remediation: present
   state: present
   tags: {}
+rhc_pool_ids: []
 rhc_organization: null
 rhc_proxy: {}
 rhc_release: null

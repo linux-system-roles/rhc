@@ -43,6 +43,14 @@ it was already connected; because of this, the role will always report a
 "changed" status.
 
 ```yaml
+    rhc_pool_ids:
+      - 0123456789abcdef0123456789abcdef: 2
+      - 1123456789abcdef0123456789abcdef: 4
+```
+
+The subscription pool IDs to consume
+
+```yaml
     rhc_organization: "your-organization"
 ```
 

@@ -29,6 +29,7 @@
       else rhc_state | d('present') }}"
     username: "{{ rhc_auth.login.username | d(omit) }}"
     password: "{{ rhc_auth.login.password | d(omit) }}"
+    pool_ids: "{{ rhc_pool_ids | d(omit) }}"
     activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
       if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
     org_id: "{{ rhc_organization

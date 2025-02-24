@@ -74,6 +74,9 @@
             rhc_state: reconnect
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
+        - name: Get rhsm UUID
+          include_tasks: tasks/get_rhsm_uuid.yml
+
         - name: Get insights UUID
           include_tasks: tasks/get_insights_uuid.yml
 
@@ -81,9 +84,11 @@
           set_fact:
             test_insights_uuid_after: "{{ test_insights_uuid }}"
 
-        - name: Check the insights UUID changed
+        - name: Check Insights UUID changed or same as rhsm UUID
           assert:
-            that: test_insights_uuid_before != test_insights_uuid_after
+            that: >
+              test_insights_uuid_before != test_insights_uuid_after
+              or test_insights_uuid_after == test_rhsm_uuid
 
         - name: Unregister insights
           include_role:

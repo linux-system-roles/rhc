@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.6.10] - 2025-02-26
+--------------------
+
+### Other Changes
+
+- ci: ansible-plugin-scan is disabled for now (#212)
+- ci: bump ansible-lint to v25; provide collection requirements for ansible-lint (#215)
+- ci: Check spelling with codespell (#217)
+- ci: Revert .pandoc_template because it contains a typo in Licence (#218)
+- ci: Add test plan that runs CI tests and customize it for each role (#219)
+- tests: adjust UUID checks to newer versions of insights-core (#220)
+
 [1.6.9] - 2025-01-27
 --------------------
 

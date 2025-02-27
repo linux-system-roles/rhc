@@ -1,0 +1,37 @@
+# file-redaction.yaml
+# Docs: https://access.redhat.com/articles/4511681
+---
+# Omit entire output of commands
+# Commands can be specified either by full command or
+#   by the "symbolic_name" listed in /etc/insights-client/.cache.json
+{% if rhc_insights.file_redaction.commands %}
+commands:
+{% for command in rhc_insights.file_redaction.commands %}
+  - {{ command }}
+{% endfor %}
+{% endif %}
+
+# Omit entire output of files
+# Files can be specified either by full filename or
+# by the "symbolic_name" listed in .cache.json
+{% if rhc_insights.file_redaction.files %}
+files:
+{% for file in rhc_insights.file_redaction.files %}
+  - {{ file }}
+{% endfor %}
+{% endif %}
+
+# Omit insights-core components
+# Refer to the Datasource Catalog here for a full list of available insights-core components,
+#   and the commands/files they correspond to.
+#   See items listed under "General Datasources":
+#   https://insights-core.readthedocs.io/en/latest/specs_catalog.html
+#
+# Components specified here must be listed with the fully qualified name, i.e.
+#   must be prefixed with "insights.specs.default.DefaultSpecs."
+{% if rhc_insights.file_redaction.components %}
+components:
+{% for component in rhc_insights.file_redaction.components %}
+  - {{ component }}
+{% endfor %}
+{% endif %}

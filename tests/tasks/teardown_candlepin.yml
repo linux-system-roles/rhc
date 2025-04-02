@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Teardown Candlepin container
+  when: lsr_rhc_test_data_file | length == 0
+  block:
+    - name: Check if the candlepin container exists
+      command:
+        argv:
+          - podman
+          - ps
+          - -a
+          - --filter
+          - name=candlepin
+      register: __rhc_candlepin_cont_exists
+      changed_when: false
+
+    - name: Ensure that Candlepin container doesn't exist
+      command:
+        argv:
+          - podman
+          - stop
+          - candlepin
+      changed_when: true
+      when: '"candlepin" in __rhc_candlepin_cont_exists.stdout'

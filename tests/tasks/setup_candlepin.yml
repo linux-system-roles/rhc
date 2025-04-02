@@ -36,17 +36,8 @@
         use: "{{ __rhc_is_ostree |
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
-    - name: Stop and remove Candlepin container
-      command:
-        argv:
-          - podman
-          - stop
-          - candlepin
-      register: podman_stop_status
-      failed_when:
-        - podman_stop_status.rc != 0
-        - '"no such container" not in podman_stop_status.stderr'
-      changed_when: false
+    - name: Clean up Candlepin container
+      include_tasks: teardown_candlepin.yml
 
     - name: Start Candlepin container
       vars:

@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Check if candlepin container is running
+  command: podman ps -a --filter name=candlepin
+  register: __rhc_candlepin_container
+  changed_when: false
+
+- name: Stop Candlepin container
+  command: podman stop candlepin
+  changed_when: true
+  when: '"candlepin" in __rhc_candlepin_container.stdout'
+
+- name: Remove Candlepin container
+  command: podman rm --force --ignore candlepin
+  changed_when: true
+  when: '"candlepin" in __rhc_candlepin_container.stdout'
+
+- name: Remove Candlepin container image
+  command: podman rmi ghcr.io/ptoscano/candlepin-unofficial
+  changed_when: true
+  when: '"candlepin" in __rhc_candlepin_container.stdout'

@@ -7,19 +7,45 @@
   tags:
     - tests::slow
   tasks:
-    - name: Setup Candlepin
-      import_tasks: tasks/setup_candlepin.yml
-
-    - name: Try to register using invalid credentials
+    - name: Basic register/unregister
       block:
-        - name: Register (wrong username, wrong password)
+        - name: Setup Candlepin
+          import_tasks: tasks/setup_candlepin.yml
+
+        - name: Try to register using invalid credentials
+          block:
+            - name: Register (wrong username, wrong password)
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_auth:
+                  login:
+                    username: "{{ lsr_rhc_test_data.reg_invalid_username }}"
+                    password: "{{ lsr_rhc_test_data.reg_invalid_password }}"
+                rhc_insights:
+                  state: absent
+                rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+                rhc_server:
+                  hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+                  port: "{{ lsr_rhc_test_data.candlepin_port }}"
+                  prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+                  insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            - name: Unreachable task
+              fail:
+                msg: The above task must fail
+          rescue:
+            - name: Assert registration failed
+              assert:
+                that: ansible_failed_result.msg != 'The above task must fail'
+
+        - name: Register
           include_role:
             name: linux-system-roles.rhc
           vars:
             rhc_auth:
               login:
-                username: "{{ lsr_rhc_test_data.reg_invalid_username }}"
-                password: "{{ lsr_rhc_test_data.reg_invalid_password }}"
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
             rhc_insights:
               state: absent
             rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
@@ -28,96 +54,96 @@
               port: "{{ lsr_rhc_test_data.candlepin_port }}"
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
-        - name: Unreachable task
-          fail:
-            msg: The above task must fail
-      rescue:
-        - name: Assert registration failed
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+        - name: Register (noop)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+        - name: Get rhsm UUID
+          include_tasks: tasks/get_rhsm_uuid.yml
+
+        - name: Rename the rhsm UUID to test_rhsm_uuid_before
+          set_fact:
+            test_rhsm_uuid_before: "{{ test_rhsm_uuid }}"
+
+        - name: Register (force)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_state: reconnect
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+        - name: Get rhsm UUID
+          include_tasks: tasks/get_rhsm_uuid.yml
+
+        - name: Rename the rhsm UUID to test_rhsm_uuid_after
+          set_fact:
+            test_rhsm_uuid_after: "{{ test_rhsm_uuid }}"
+
+        - name: Check the rhsm UUID changed
           assert:
-            that: ansible_failed_result.msg != 'The above task must fail'
+            that: test_rhsm_uuid_before.stdout != test_rhsm_uuid_after.stdout
 
-    - name: Register
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_auth:
-          login:
-            username: "{{ lsr_rhc_test_data.reg_username }}"
-            password: "{{ lsr_rhc_test_data.reg_password }}"
-        rhc_insights:
-          state: absent
-        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
-        rhc_server:
-          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
-          port: "{{ lsr_rhc_test_data.candlepin_port }}"
-          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
-          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
-        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent
 
-    - name: Register (noop)
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_auth:
-          login:
-            username: "{{ lsr_rhc_test_data.reg_username }}"
-            password: "{{ lsr_rhc_test_data.reg_password }}"
-        rhc_insights:
-          state: absent
-        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
-        rhc_server:
-          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
-          port: "{{ lsr_rhc_test_data.candlepin_port }}"
-          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
-          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
-        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        - name: Try to register using activation key with missing org
+          block:
+            - name: Register (activation key, missing org)
+              include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_auth:
+                  activation_keys:
+                    keys: "{{ lsr_rhc_test_data.reg_activation_keys }}"
+                rhc_insights:
+                  state: absent
+                rhc_server:
+                  hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+                  port: "{{ lsr_rhc_test_data.candlepin_port }}"
+                  prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+                  insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+                  rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
-    - name: Get rhsm UUID
-      include_tasks: tasks/get_rhsm_uuid.yml
+            - name: Unreachable task
+              fail:
+                msg: The above task must fail
+          rescue:
+            - name: Assert registration failed
+              assert:
+                that: ansible_failed_result.msg != 'The above task must fail'
 
-    - name: Rename the rhsm UUID to test_rhsm_uuid_before
-      set_fact:
-        test_rhsm_uuid_before: "{{ test_rhsm_uuid }}"
-
-    - name: Register (force)
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_auth:
-          login:
-            username: "{{ lsr_rhc_test_data.reg_username }}"
-            password: "{{ lsr_rhc_test_data.reg_password }}"
-        rhc_insights:
-          state: absent
-        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
-        rhc_server:
-          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
-          port: "{{ lsr_rhc_test_data.candlepin_port }}"
-          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
-          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
-        rhc_state: reconnect
-        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
-
-    - name: Get rhsm UUID
-      include_tasks: tasks/get_rhsm_uuid.yml
-
-    - name: Rename the rhsm UUID to test_rhsm_uuid_after
-      set_fact:
-        test_rhsm_uuid_after: "{{ test_rhsm_uuid }}"
-
-    - name: Check the rhsm UUID changed
-      assert:
-        that: test_rhsm_uuid_before.stdout != test_rhsm_uuid_after.stdout
-
-    - name: Unregister
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_state: absent
-
-    - name: Try to register using activation key with missing org
-      block:
-        - name: Register (activation key, missing org)
+        - name: Register (using activation keys)
           include_role:
             name: linux-system-roles.rhc
           vars:
@@ -126,63 +152,42 @@
                 keys: "{{ lsr_rhc_test_data.reg_activation_keys }}"
             rhc_insights:
               state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
             rhc_server:
               hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
               port: "{{ lsr_rhc_test_data.candlepin_port }}"
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
-              rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
 
-        - name: Unreachable task
-          fail:
-            msg: The above task must fail
-      rescue:
-        - name: Assert registration failed
-          assert:
-            that: ansible_failed_result.msg != 'The above task must fail'
+        - name: Register (using activation keys, noop)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_auth:
+              activation_keys:
+                keys: "{{ lsr_rhc_test_data.reg_activation_keys }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+      always:
+        - name: Unregister
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent
 
-    - name: Register (using activation keys)
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_auth:
-          activation_keys:
-            keys: "{{ lsr_rhc_test_data.reg_activation_keys }}"
-        rhc_insights:
-          state: absent
-        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
-        rhc_server:
-          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
-          port: "{{ lsr_rhc_test_data.candlepin_port }}"
-          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
-          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
-        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        - name: Unregister (noop)
+          include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent
 
-    - name: Register (using activation keys, noop)
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_auth:
-          activation_keys:
-            keys: "{{ lsr_rhc_test_data.reg_activation_keys }}"
-        rhc_insights:
-          state: absent
-        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
-        rhc_server:
-          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
-          port: "{{ lsr_rhc_test_data.candlepin_port }}"
-          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
-          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
-        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
-
-    - name: Unregister
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_state: absent
-
-    - name: Unregister (noop)
-      include_role:
-        name: linux-system-roles.rhc
-      vars:
-        rhc_state: absent
+        - name: Clean up Candlepin container
+          include_tasks: tasks/teardown_candlepin.yml

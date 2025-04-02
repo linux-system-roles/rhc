@@ -7,11 +7,11 @@
   tags:
     - tests::slow
   tasks:
-    - name: Setup Candlepin
-      import_tasks: tasks/setup_candlepin.yml
-
     - name: Test repositories
       block:
+        - name: Setup Candlepin
+          import_tasks: tasks/setup_candlepin.yml
+
         - name: Register
           include_role:
             name: linux-system-roles.rhc
@@ -94,10 +94,12 @@
               lsr_rhc_test_data.repositories.0.name in
               test_repositories.stdout_lines
 
-
       always:
         - name: Unregister
           include_role:
             name: linux-system-roles.rhc
           vars:
             rhc_state: absent
+
+        - name: Clean up Candlepin container
+          include_tasks: tasks/teardown_candlepin.yml

@@ -67,7 +67,7 @@
             if (ansible_distribution in ['CentOS', 'RedHat']
                 and ansible_distribution_major_version | int < 8)
             else '' }}"
-          - ghcr.io/ptoscano/candlepin-unofficial
+          - ghcr.io/candlepin/candlepin-unofficial
       command:
         argv:
           "{{ podman_run_cli | reject('match', '^$') | list }}"

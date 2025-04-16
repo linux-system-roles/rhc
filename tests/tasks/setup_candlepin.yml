@@ -36,8 +36,8 @@
         use: "{{ __rhc_is_ostree |
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
-    - name: Stop and remove Candlepin container
-      include_tasks: cleanup_candlepin_container.yml
+    - name: Remove Candlepin container
+      include_tasks: remove_candlepin_container.yml
 
     - name: Start Candlepin container
       vars:

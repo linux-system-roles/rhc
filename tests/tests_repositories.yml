@@ -102,6 +102,4 @@
             rhc_state: absent
 
         - name: Clean up Candlepin container
-          include_tasks: tasks/cleanup_candlepin_container.yml
-          vars:
-            __rhc_cleanup_image: true
+          include_tasks: tasks/remove_candlepin_container.yml

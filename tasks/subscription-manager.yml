@@ -31,7 +31,7 @@
     password: "{{ rhc_auth.login.password | d(omit) }}"
     activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
       if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
-    org_id: "{{ rhc_organization
+    org_id: "{{ rhc_organization | string | default(omit)
       if (not rhc_organization is none
           and rhc_organization != omit)
       else omit }}"

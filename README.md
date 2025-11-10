@@ -151,6 +151,25 @@ Whether the system is connected to Insights; valid values are `present`
 (the default, to ensure connection), and `absent`.
 
 ```yaml
+    rhc_insights_auth:
+      authmethod: BASIC
+      username: null
+      password: null
+```
+
+Configures the authentication method; valid options for `authmethod` are `BASIC`
+(the default), and `CERT`. The variables `username` and `password` configure
+username and password when authmethod is `BASIC`.
+
+```yaml
+    rhc_insights:
+      autoconfig: true
+```
+
+Whether the system attempts to auto configure with Satellite server, values
+are `true` (the default), and `false`.
+
+```yaml
     rhc_insights:
       autoupdate: true
 ```
@@ -175,6 +194,14 @@ Possible values of this variable:
 
 ```yaml
     rhc_insights:
+      baseurl: null
+```
+
+Configures the Base URL for the Insights API.
+If `baseurl: null` is set, the default of the `insights-client` will be used.
+
+```yaml
+    rhc_insights:
       display_name: "Example Host"
 ```
 
@@ -187,6 +214,56 @@ Possible values of this variable:
 * any other string value: the display name is changed in Host Based Inventory (HBI).
 
 Note: If not set explicitly on registration, the display name is set to the hostname by default. It is not possible to automatically revert it to the hostname, but it can be set so manually.
+
+```yaml
+    rhc_insights:
+      file_redaction:
+        commands: []
+        files: []
+        components: []
+```
+
+Specify lists of commands, files, and components to omit from output
+
+```yaml
+    rhc_insights:
+      file_redaction:
+        commands: []
+        files: []
+        components: []
+      file_content_redaction:
+        keywords: []
+        patterns: []
+        regex_patterns: []
+```
+
+These are optional.
+Specify lists of commands, files, components, keywords and patterns to omit from output.
+NOTE: You cannot mix plain string matching and regular expression matching.
+For more information on this topic read: [YAML-style denylist configuration for Red Hat Insights Client](https://access.redhat.com/articles/4511681).
+
+```yaml
+    rhc_insights:
+      loglevel: DEFAULT
+```
+
+Configures the log level; valid options are DEBUG (the default), INFO, WARNING, ERROR, CRITICAL.
+
+```yaml
+    rhc_insights:
+      obfuscate: false
+```
+
+Configures IP address obfuscation; valid values are `false` (the default),
+and `true`.
+
+```yaml
+    rhc_insights:
+      obfuscate_hostname: false
+```
+
+Configures hostname obfuscation; valid values are `false` (the default),
+and `true`. Requires `obfuscate: true`.
 
 ```yaml
     rhc_insights:

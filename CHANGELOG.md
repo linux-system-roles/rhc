@@ -1,6 +1,31 @@
 Changelog
 =========
 
+[1.6.12] - 2025-11-17
+--------------------
+
+### Bug Fixes
+
+- fix: cannot use community-general version 12 - no py27 and py36 support (#248)
+
+### Other Changes
+
+- ci: Bump sclorg/testing-farm-as-github-action from 3 to 4 (#231)
+- ci: bump tox-lsr to 3.8.0; rename qemu/kvm tests (#232)
+- ci: Add Fedora 42; use tox-lsr 3.9.0; use lsr-report-errors for qemu tests (#233)
+- ci: Add support for bootc end-to-end validation tests (#234)
+- ci: Use ansible 2.19 for fedora 42 testing; support python 3.13 (#235)
+- ci: rollout several recent changes to CI testing (#237)
+- ci: support openSUSE Leap in qemu/kvm test matrix (#238)
+- ci: use the new epel feature to enable EPEL for testing farm (#239)
+- ci: use tox-lsr 3.12.0 for osbuild_config.yml feature (#241)
+- ci: use JSON format for __bootc_validation (#242)
+- ci: Bump actions/github-script from 7 to 8 (#243)
+- ci: Bump actions/upload-artifact from 4 to 5 (#244)
+- ci: use versioned upload-artifact instead of master; bump codeql-action to v4; bump upload-artifact to v5 (#245)
+- ci: bump tox-lsr to 3.13.0 (#246)
+- ci: bump tox-lsr to 3.14.0 - this moves standard-inventory-qcow2 to tox-lsr (#247)
+
 [1.6.11] - 2025-04-28
 --------------------
 

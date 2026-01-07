@@ -55,8 +55,8 @@
           - --publish
           - 8080:8080
           - "{{ '--privileged'
-            if (ansible_distribution in ['CentOS', 'RedHat']
-                and ansible_distribution_major_version | int < 8)
+            if (ansible_facts['distribution'] in ['CentOS', 'RedHat']
+                and ansible_facts['distribution_major_version'] | int < 8)
             else '' }}"
           - ghcr.io/candlepin/candlepin-unofficial
       command:

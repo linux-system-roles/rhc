@@ -156,7 +156,7 @@
 
 - name: Configure remediation
   when:
-    - ansible_distribution_version is version("8.4", ">=")
+    - ansible_facts['distribution_version'] is version("8.4", ">=")
     - rhc_insights.remediation | d("present") == "present"
   block:
     - name: Ensure worker and ansible packages are installed

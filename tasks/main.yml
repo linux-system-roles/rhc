@@ -6,7 +6,7 @@
 - name: Handle insights unregistration
   include_tasks: insights-client-unregistration.yml
   when:
-    - ansible_distribution == "RedHat"
+    - ansible_facts['distribution'] == "RedHat"
     - >-
       rhc_insights.state | d("present") == "absent"
       or rhc_state | d("present") in ["absent", "reconnect"]
@@ -18,6 +18,6 @@
 - name: Handle insights registration
   include_tasks: insights-client.yml
   when:
-    - ansible_distribution == "RedHat"
+    - ansible_facts['distribution'] == "RedHat"
     - rhc_insights.state | d("present") == "present"
     - rhc_state | d("present") in ["present", "reconnect"]

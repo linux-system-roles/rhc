@@ -18,7 +18,7 @@
     - name: Skip if the RHEL version is older than 8.4
       meta: end_play
       when:
-        - ansible_distribution_version is version("8.4", "<")
+        - ansible_facts["distribution_version"] is version("8.4", "<")
 
     - name: Test remediation
       block:

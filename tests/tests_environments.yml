@@ -86,10 +86,10 @@
             - name: Check the enabled environments
               when:
                 - >-
-                  ansible_distribution not in ["CentOS", "RedHat"]
-                  or (ansible_distribution == "CentOS"
-                      and ansible_distribution_major_version | int >= 8)
-                  or (ansible_distribution_version is version("8.6", ">="))
+                  ansible_facts["distribution"] not in ["CentOS", "RedHat"]
+                  or (ansible_facts["distribution"] == "CentOS"
+                      and ansible_facts["distribution_major_version"] | int >= 8)
+                  or (ansible_facts["distribution_version"] is version("8.6", ">="))
               block:
                 - name: Get enabled environments
                   include_tasks: tasks/list_environments.yml

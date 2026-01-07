@@ -21,7 +21,7 @@
 - name: Check if insights-packages are installed
   package_facts:
   when:
-    - ansible_distribution == "RedHat"
+    - ansible_facts['distribution'] == "RedHat"
     - >-
       rhc_insights.state | d("present") == "absent"
       or rhc_state | d("present") in ["absent", "reconnect"]

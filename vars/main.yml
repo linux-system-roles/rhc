@@ -29,7 +29,7 @@ __rhc_insights_tags: "/etc/insights-client/tags.yaml"
 # to Insights, used for remediations; starting from EL 10 the service is the
 # upstream one, and no more the downstream-branded one
 __rhc_yggdrasil_systemd_service: "{{ 'yggdrasil'
-  if (ansible_distribution_major_version | int >= 10)
+  if (ansible_facts['distribution_major_version'] | int >= 10)
   else 'rhcd' }}"
 
 # BEGIN - DO NOT EDIT THIS BLOCK - rh distros variables
@@ -44,8 +44,8 @@ __rhc_rh_distros:
 __rhc_rh_distros_fedora: "{{ __rhc_rh_distros + ['Fedora'] }}"
 
 # Use this in conditionals to check if distro is Red Hat or clone
-__rhc_is_rh_distro: "{{ ansible_distribution in __rhc_rh_distros }}"
+__rhc_is_rh_distro: "{{ ansible_facts['distribution'] in __rhc_rh_distros }}"
 
 # Use this in conditionals to check if distro is Red Hat or clone, or Fedora
-__rhc_is_rh_distro_fedora: "{{ ansible_distribution in __rhc_rh_distros_fedora }}"
+__rhc_is_rh_distro_fedora: "{{ ansible_facts['distribution'] in __rhc_rh_distros_fedora }}"
 # END - DO NOT EDIT THIS BLOCK - rh distros variables

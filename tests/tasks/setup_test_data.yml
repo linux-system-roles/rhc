@@ -37,3 +37,47 @@
     - name: Set flag to indicate system is ostree
       set_fact:
         __rhc_is_ostree: "{{ __ostree_booted_stat.stat.exists }}"
+
+- name: Setup for external proxy
+  vars:
+    __proxy: "{{ lookup('env', 'SR_RHC_EXTERNAL_PROXY') }}"
+    __http_proxy: "http://{{ __proxy }}"
+    __https_proxy: "{{ __http_proxy }}"
+  when: __proxy | length > 0
+  block:
+    - name: Add proxy vars to bashrc
+      lineinfile:
+        path: /root/.bashrc
+        line: "{{ item }}"
+        create: true
+        mode: "0644"
+      loop:
+        - export http_proxy={{ __http_proxy }}
+        - export https_proxy={{ __https_proxy }}
+
+    - name: Ensure rhsm service.d directory exists
+      file:
+        path: /etc/systemd/system/rhsm.service.d
+        state: directory
+        mode: "0755"
+
+    - name: Add proxy vars to rhsm service
+      copy:
+        content: |
+          [Service]
+          Environment=http_proxy={{ __http_proxy }}
+          Environment=https_proxy={{ __https_proxy }}
+        dest: /etc/systemd/system/rhsm.service.d/proxy.conf
+        mode: "0644"
+      register: __proxy_conf
+
+    - name: Reload rhsm service
+      systemd:
+        name: rhsm.service
+        state: restarted
+        daemon_reload: true
+      when: __proxy_conf is changed  # noqa no-handler
+
+    - name: Check rhsm service
+      command: systemctl status rhsm.service
+      changed_when: false

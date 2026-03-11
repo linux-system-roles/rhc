@@ -40,6 +40,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
             rhc_release: "{{ lsr_rhc_test_data.release }}"
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Get set release
           include_tasks: tasks/get_release.yml
@@ -56,6 +57,7 @@
             rhc_insights:
               state: absent
             rhc_release: {"state":"absent"}
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Get set release
           include_tasks: tasks/get_release.yml
@@ -72,6 +74,7 @@
             rhc_insights:
               state: absent
             rhc_release: {"state":"absent"}
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Check invalid releases cannot be set
           block:
@@ -84,6 +87,7 @@
                 # look like a valid release number, hopefully it will never
                 # be used!
                 rhc_release: "1.99"
+                rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
             - name: Unreachable task
               fail:
@@ -101,6 +105,7 @@
             rhc_insights:
               state: absent
             rhc_release: "{{ lsr_rhc_test_data.release }}"
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Get set release
           include_tasks: tasks/get_release.yml
@@ -117,6 +122,7 @@
             rhc_insights:
               state: absent
             rhc_release: "{{ lsr_rhc_test_data.release }}"
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Register (forced, without release)
           include_role:
@@ -137,6 +143,7 @@
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
             rhc_release: {"state":"absent"}
             rhc_state: reconnect
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Get set release
           include_tasks: tasks/get_release.yml
@@ -165,6 +172,7 @@
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
             rhc_release: "{{ lsr_rhc_test_data.release }}"
             rhc_state: reconnect
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Get set release
           include_tasks: tasks/get_release.yml

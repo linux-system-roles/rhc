@@ -31,6 +31,7 @@
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Check display_name is set to 'name' in config file
           command:
@@ -99,7 +100,7 @@
                 state: absent
               check_mode: true
               register: __test_display_name_removed
-              failed_when: __test_display_name_removed.found
+              failed_when: __test_display_name_removed.found != 0
 
       always:
         - name: Unregister

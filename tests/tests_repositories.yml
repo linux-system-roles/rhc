@@ -30,6 +30,7 @@
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
             rhc_repositories: "{{ lsr_rhc_test_data.repositories }}"
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Get enabled repositories
           include_tasks: tasks/list_repositories.yml

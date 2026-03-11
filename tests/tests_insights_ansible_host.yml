@@ -31,6 +31,7 @@
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Check ansible_host is set to 'host' in config file
           command:
@@ -89,7 +90,7 @@
                 state: absent
               check_mode: true
               register: __test_ansible_host_absent
-              failed_when: __test_ansible_host_absent.found
+              failed_when: __test_ansible_host_absent.found != 0
 
         - name: Test ansible_host is removed during insights unregistration
           block:
@@ -117,7 +118,7 @@
                 state: absent
               check_mode: true
               register: __test_ansible_host_removed
-              failed_when: __test_ansible_host_removed.found
+              failed_when: __test_ansible_host_removed.found != 0
 
       always:
         - name: Unregister

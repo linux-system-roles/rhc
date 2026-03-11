@@ -5,3 +5,5 @@
     url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}"  # yamllint disable-line
     method: HEAD
     validate_certs: false
+  environment: "{{ {'http_proxy': __rhc_external_proxy_url, 'https_proxy': __rhc_external_proxy_url}
+    if __rhc_external_proxy_url | length > 0 else {} }}"

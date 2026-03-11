@@ -331,9 +331,11 @@
           vars:
             rhc_state: absent
 
+        # skip this test if external proxy is used
         - name: Register (without proxy)
           include_role:
             name: linux-system-roles.rhc
+          when: not __rhc_use_external_proxy
           vars:
             rhc_auth:
               login:

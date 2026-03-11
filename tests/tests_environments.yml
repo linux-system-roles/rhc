@@ -51,6 +51,7 @@
                 rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
                 rhc_environments:
                   - "{{ lsr_rhc_test_data.env_nonworking }}"
+                rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
             - name: Unreachable task
               fail:
@@ -80,6 +81,7 @@
                   insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
                 rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
                 rhc_environments: "{{ lsr_rhc_test_data.envs_register }}"
+                rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
             # 'subscription-manager environments' has a '--list' option only
             # in RHEL 8.6+ and greater (incl. RHEL 9+)

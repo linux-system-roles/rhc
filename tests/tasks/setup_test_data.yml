@@ -37,3 +37,36 @@
     - name: Set flag to indicate system is ostree
       set_fact:
         __rhc_is_ostree: "{{ __ostree_booted_stat.stat.exists }}"
+
+- name: Set flag to indicate use of external proxy
+  set_fact:
+    __rhc_use_external_proxy: "{{ lookup('env', 'SR_RHC_EXTERNAL_PROXY') | length > 0 }}"
+    __rhc_external_proxy_url: "{{ lookup('env', 'SR_RHC_EXTERNAL_PROXY') }}"
+
+- name: Set rhc_external_proxy to empty when external proxy is not used
+  set_fact:
+    rhc_external_proxy: {}
+  when: not __rhc_use_external_proxy
+
+- name: Handle external proxy
+  when: __rhc_use_external_proxy
+  block:
+    - name: Parse and set rhc_external_proxy
+      set_fact:
+        rhc_external_proxy:
+          scheme: "{{ __rhc_external_proxy_url | urlsplit('scheme') }}"
+          hostname: "{{ __rhc_external_proxy_url | urlsplit('hostname') }}"
+          port: "{{ (__rhc_external_proxy_url | urlsplit('port')) | default('') | string }}"
+
+    # unfortunately this doesn't work in all cases, so we have to add the environment
+    # explicitly to the check_candlepin.yml task as well
+    - name: Add proxy vars to bashrc
+      lineinfile:
+        path: /root/.bashrc
+        regexp: "^export https?="
+        line: "{{ item }}"
+        create: true
+        mode: "0644"
+      loop:
+        - export http_proxy={{ __rhc_external_proxy_url }}
+        - export https_proxy={{ __rhc_external_proxy_url }}

@@ -41,6 +41,7 @@
               prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
               insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
             rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Set the fact for the systemd service
           set_fact:

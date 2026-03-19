@@ -2,7 +2,6 @@
 ---
 - name: Basic insights autoupdate test
   hosts: all
-  gather_facts: false
   become: true
 
   tasks:
@@ -12,10 +11,9 @@
     - name: Test autoupdate
       block:
         - name: Add autoupdate and register insights
-          include_role:
-            name: linux-system-roles.rhc
-            public: true
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
+            __sr_public: true
             rhc_auth:
               login:
                 username: "{{ lsr_rhc_test_data.reg_username }}"
@@ -39,16 +37,14 @@
           changed_when: false
 
         - name: Disable autoupdate
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               autoupdate: false
               remediation: absent
 
         - name: Disable autoupdate (noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               autoupdate: false
@@ -61,7 +57,6 @@
 
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent

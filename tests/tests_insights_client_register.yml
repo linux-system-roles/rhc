@@ -2,7 +2,6 @@
 ---
 - name: Basic insights-client register/unregister
   hosts: all
-  gather_facts: false
 
   tasks:
     - name: Setup Insights
@@ -11,8 +10,7 @@
     - name: Test Insights registration
       block:
         - name: Register insights
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -31,8 +29,7 @@
             rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Register insights (noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -58,8 +55,7 @@
             test_insights_uuid_before: "{{ test_insights_uuid }}"
 
         - name: Register (force)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -94,22 +90,19 @@
               or test_insights_uuid_after == test_rhsm_uuid
 
         - name: Unregister insights
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
 
         - name: Unregister insights (noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
 
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent

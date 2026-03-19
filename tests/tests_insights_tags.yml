@@ -2,7 +2,6 @@
 ---
 - name: Basic test for insights tags
   hosts: all
-  gather_facts: false
 
   tasks:
     - name: Setup Insights
@@ -11,10 +10,9 @@
     - name: Test insights tags
       block:
         - name: Configure tags and register insights
-          include_role:
-            name: linux-system-roles.rhc
-            public: true
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
+            __sr_public: true
             rhc_auth:
               login:
                 username: "{{ lsr_rhc_test_data.reg_username }}"
@@ -46,8 +44,7 @@
             that: test_tags_new.stat.size > 0
 
         - name: Change tags
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               remediation: absent
@@ -69,8 +66,7 @@
               - test_tags_new.stat.size != test_tags_chg.stat.size
 
         - name: Do nothing
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               remediation: absent
@@ -84,8 +80,7 @@
               - test_tags.stat.size == test_tags_chg.stat.size
 
         - name: Remove all tags
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               remediation: absent
@@ -101,7 +96,6 @@
 
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent

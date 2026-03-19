@@ -2,7 +2,6 @@
 ---
 - name: Basic proxy test
   hosts: all
-  gather_facts: false
   become: true
   tags:
     - tests::slow
@@ -37,8 +36,7 @@
         - name: Try to register (wrong host, wrong port)
           block:
             - name: Register (wrong host, wrong port)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -67,8 +65,7 @@
         - name: Try to register (wrong host)
           block:
             - name: Register (wrong host)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -97,8 +94,7 @@
         - name: Try to register (wrong port)
           block:
             - name: Register (wrong port)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -125,8 +121,7 @@
                 that: ansible_failed_result.msg != 'The above task must fail'
 
         - name: Register (no authentication)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -154,8 +149,7 @@
           when: "'proxy_noauth_scheme' in lsr_rhc_test_data"
 
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
 
@@ -167,8 +161,7 @@
         - name: Try to register (missing credentials)
           block:
             - name: Register (missing credentials)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -198,8 +191,7 @@
         - name: Try to register (wrong username, wrong password)
           block:
             - name: Register (wrong username, wrong password)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -231,8 +223,7 @@
         - name: Try to register (wrong username)
           block:
             - name: Register (wrong username)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -264,8 +255,7 @@
         - name: Try to register (wrong password)
           block:
             - name: Register (wrong password)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -295,8 +285,7 @@
                 that: ansible_failed_result.msg != 'The above task must fail'
 
         - name: Register (authentication)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -326,15 +315,13 @@
           when: "'proxy_auth_scheme' in lsr_rhc_test_data"
 
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
 
         # skip this test if external proxy is used
         - name: Register (without proxy)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           when: not __rhc_use_external_proxy
           vars:
             rhc_auth:
@@ -353,8 +340,7 @@
             rhc_proxy: {"state":"absent"}
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
 

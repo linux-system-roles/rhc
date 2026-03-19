@@ -2,7 +2,6 @@
 ---
 - name: Insights ansible host test
   hosts: all
-  gather_facts: false
   become: true
 
   tasks:
@@ -12,10 +11,9 @@
     - name: Test ansible_host
       block:
         - name: Add ansible_host and register insights
-          include_role:
-            name: linux-system-roles.rhc
-            public: true
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
+            __sr_public: true
             rhc_auth:
               login:
                 username: "{{ lsr_rhc_test_data.reg_username }}"
@@ -41,8 +39,7 @@
         - name: Test ansible_host changed value after registration
           block:
             - name: Change ansible host to 'new-host'
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   ansible_host: new-host
@@ -52,8 +49,7 @@
                 grep -ixq "^ansible_host=new-host" {{ __rhc_insights_conf }}
               changed_when: false
             - name: Change ansible host to a null value (noop)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   ansible_host: null
@@ -63,8 +59,7 @@
                 grep -ixq "^ansible_host=new-host" {{ __rhc_insights_conf }}
               changed_when: false
             - name: Change ansible host to an empty string (noop)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   ansible_host: ""
@@ -77,8 +72,7 @@
         - name: Test ansible_host set to an absent value
           block:
             - name: Set ansible host to an absent value
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   ansible_host: {state: absent}
@@ -95,8 +89,7 @@
         - name: Test ansible_host is removed during insights unregistration
           block:
             - name: Set ansible_host in config file
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   ansible_host: unreg-test
@@ -106,8 +99,7 @@
                 grep -ixq "^ansible_host=unreg-test" {{ __rhc_insights_conf }}
               changed_when: false
             - name: Unregister insights to remove ansible_host in config file
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   state: absent
@@ -122,7 +114,6 @@
 
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent

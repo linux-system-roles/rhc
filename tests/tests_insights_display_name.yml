@@ -2,7 +2,6 @@
 ---
 - name: Insights display name test
   hosts: all
-  gather_facts: false
   become: true
 
   tasks:
@@ -12,10 +11,9 @@
     - name: Test display_name
       block:
         - name: Add display_name and register insights
-          include_role:
-            name: linux-system-roles.rhc
-            public: true
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
+            __sr_public: true
             rhc_auth:
               login:
                 username: "{{ lsr_rhc_test_data.reg_username }}"
@@ -41,8 +39,7 @@
         - name: Test display_name changed value after registration
           block:
             - name: Change display name to 'new-name'
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   display_name: new-name
@@ -52,8 +49,7 @@
                 grep -ixq "^display_name=new-name" {{ __rhc_insights_conf }}
               changed_when: false
             - name: Change display name to a null value (noop)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   display_name: null
@@ -63,8 +59,7 @@
                 grep -ixq "^display_name=new-name" {{ __rhc_insights_conf }}
               changed_when: false
             - name: Change display name to an empty string (noop)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   display_name: ""
@@ -77,8 +72,7 @@
         - name: Test display_name is removed during insights unregistration
           block:
             - name: Set display_name in config file
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   display_name: unreg-test
@@ -88,8 +82,7 @@
                 grep -ixq "^display_name=unreg-test" {{ __rhc_insights_conf }}
               changed_when: false
             - name: Unregister insights to remove display_name in config file
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   state: absent
@@ -104,7 +97,6 @@
 
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent

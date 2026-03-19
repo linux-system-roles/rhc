@@ -2,7 +2,6 @@
 ---
 - name: Basic repository enablement/disablement test
   hosts: all
-  gather_facts: false
   become: true
   tags:
     - tests::slow
@@ -33,8 +32,7 @@
         - name: Try to register (wrong environment)
           block:
             - name: Register (wrong environment)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -64,8 +62,7 @@
         - name: Test environments on registration
           block:
             - name: Register (with existing environments)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -105,8 +102,7 @@
 
           always:
             - name: Unregister
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_state: absent
       always:

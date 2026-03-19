@@ -2,7 +2,6 @@
 ---
 - name: Basic repository enablement/disablement test
   hosts: all
-  gather_facts: false
   become: true
   tags:
     - tests::slow
@@ -13,8 +12,7 @@
           import_tasks: tasks/setup_candlepin.yml
 
         - name: Register
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -57,8 +55,7 @@
           loop: "{{ lsr_rhc_test_data.repositories }}"
 
         - name: Disable all the repositories
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
@@ -76,8 +73,7 @@
               - test_repositories.stdout_lines | length == 0
 
         - name: Enable repo on already registered system
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
@@ -97,8 +93,7 @@
 
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
 

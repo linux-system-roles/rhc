@@ -2,7 +2,6 @@
 ---
 - name: Basic release test
   hosts: all
-  gather_facts: false
   become: true
   tags:
     - tests::slow
@@ -23,8 +22,7 @@
     - name: Test release
       block:
         - name: Register
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -51,8 +49,7 @@
               - lsr_rhc_test_data.release == test_release.stdout
 
         - name: Unset the release
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
@@ -68,8 +65,7 @@
               - test_release.stdout | length == 0
 
         - name: Unset the release (noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
@@ -79,8 +75,7 @@
         - name: Check invalid releases cannot be set
           block:
             - name: Set an invalid release
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_insights:
                   state: absent
@@ -99,8 +94,7 @@
                   'No releases match ' in ansible_failed_result.msg
 
         - name: Set the release when not registering
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
@@ -116,8 +110,7 @@
               - lsr_rhc_test_data.release == test_release.stdout
 
         - name: Set the release when not registering (noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_insights:
               state: absent
@@ -125,8 +118,7 @@
             rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Register (forced, without release)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -154,8 +146,7 @@
               - test_release.stdout | length == 0
 
         - name: Register (forced, with release)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -184,7 +175,6 @@
 
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent

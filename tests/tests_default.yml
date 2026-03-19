@@ -2,13 +2,11 @@
 ---
 - name: Ensure that the role runs with default parameters
   hosts: all
-  gather_facts: false
   tasks:
     - name: Verify that by default the role fails without credentials
       block:
         - name: Run the role with default parameters
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
 
         - name: Unreachable task
           fail:

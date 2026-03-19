@@ -2,7 +2,6 @@
 ---
 - name: Basic register/unregister
   hosts: all
-  gather_facts: false
   become: true
   tags:
     - tests::slow
@@ -15,8 +14,7 @@
         - name: Try to register using invalid credentials
           block:
             - name: Register (wrong username, wrong password)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   login:
@@ -40,8 +38,7 @@
                 that: ansible_failed_result.msg != 'The above task must fail'
 
         - name: Register
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -59,8 +56,7 @@
             rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Register (noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -85,8 +81,7 @@
             test_rhsm_uuid_before: "{{ test_rhsm_uuid }}"
 
         - name: Register (force)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               login:
@@ -116,16 +111,14 @@
             that: test_rhsm_uuid_before.stdout != test_rhsm_uuid_after.stdout
 
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
 
         - name: Try to register using activation key with missing org
           block:
             - name: Register (activation key, missing org)
-              include_role:
-                name: linux-system-roles.rhc
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 rhc_auth:
                   activation_keys:
@@ -149,8 +142,7 @@
                 that: ansible_failed_result.msg != 'The above task must fail'
 
         - name: Register (using activation keys)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               activation_keys:
@@ -167,8 +159,7 @@
             rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
 
         - name: Register (using activation keys, noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_auth:
               activation_keys:
@@ -185,14 +176,12 @@
             rhc_proxy: "{{ rhc_external_proxy | default({}) }}"
       always:
         - name: Unregister
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
 
         - name: Unregister (noop)
-          include_role:
-            name: linux-system-roles.rhc
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
 

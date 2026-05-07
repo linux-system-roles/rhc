@@ -26,6 +26,7 @@
 
 - name: Check if insights-packages are installed
   package_facts:
+  no_log: "{{ ansible_verbosity < 2 }}"
   when:
     - ansible_facts['distribution'] == "RedHat"
     - >-

@@ -47,6 +47,11 @@
 
         - name: Get service_facts
           service_facts:
+          no_log: "{{ ansible_verbosity < 3 }}"
+
+        - name: Show yggdrasil_systemd_service status should be enabled
+          debug:
+            var: ansible_facts.services.get(yggdrasil_systemd_service, "not found")
 
         - name: Check remediation is enabled
           assert:
@@ -62,12 +67,25 @@
 
         - name: Get service_facts
           service_facts:
+          no_log: "{{ ansible_verbosity < 3 }}"
 
+        - name: Show yggdrasil_systemd_service status should be disabled
+          debug:
+            var: ansible_facts.services.get(yggdrasil_systemd_service, "not found")
+
+        # NOTE: Shutting down rhcd on EL8 sometimes can give the following error:
+        # cannot stop workers: cannot stop worker: cannot stop worker: cannot stop process os: process already finished
+        # which results in the status being 'failed' instead of 'disabled'
+        # https://access.redhat.com/solutions/7106551
         - name: Check remediation is disabled
           assert:
             that:
-              - yggdrasil_systemd_service in ansible_facts.services
-              - ansible_facts.services[yggdrasil_systemd_service].status == 'disabled'
+              - __info != {}
+              - __status == 'disabled' or (__state == 'stopped' and __status == 'failed')
+          vars:
+            __info: "{{ ansible_facts.services.get(yggdrasil_systemd_service, {}) }}"
+            __status: "{{ __info.get('status', '') }}"
+            __state: "{{ __info.get('state', '') }}"
 
         - name: Disable remediation (noop)
           include_tasks: tasks/run_role_with_clear_facts.yml

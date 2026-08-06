@@ -32,6 +32,8 @@ __rhc_yggdrasil_systemd_service: "{{ 'yggdrasil'
   if (ansible_facts['distribution_major_version'] | int >= 10)
   else 'rhcd' }}"
 
+__rhc_write_log_file: false
+
 # BEGIN - DO NOT EDIT THIS BLOCK - rh distros variables
 # Ansible distribution identifiers that the role treats like RHEL
 __rhc_rh_distros:

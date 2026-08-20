@@ -21,6 +21,78 @@
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
 
+- name: Call subscription-manager - EL7
+  # noqa jinja[spacing]
+  redhat_subscription_el7:
+    state: "{{ 'present'
+      if (rhc_state | d('present') == 'reconnect')
+      else rhc_state | d('present') }}"
+    username: "{{ rhc_auth.login.username | d(omit) }}"
+    password: "{{ rhc_auth.login.password | d(omit) }}"
+    activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
+      if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
+    org_id: "{{ rhc_organization
+      if (not rhc_organization is none
+          and rhc_organization != omit)
+      else omit }}"
+    server_hostname: "{{ rhc_server.hostname | d(omit) }}"
+    server_port: "{{ rhc_server.port | d(omit) }}"
+    server_prefix: "{{ rhc_server.prefix | d(omit) }}"
+    server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
+      else rhc_server.insecure | ternary('1', '0') }}"
+    release: "{{ rhc_release
+      if (rhc_state | d('present') != 'absent'
+           and rhc_release != __rhc_state_absent
+           and not rhc_release is none
+           and rhc_release != omit)
+      else omit }}"
+    server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'hostname' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.hostname }}
+      {%- endif %}"
+    server_proxy_scheme: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ 'http' }}
+      {%-   elif 'scheme' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.scheme }}
+      {%- endif %}"
+    server_proxy_port: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'port' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.port }}
+      {%- endif %}"
+    server_proxy_user: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'username' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.username }}
+      {%- endif %}"
+    server_proxy_password: "{% if rhc_proxy == __rhc_state_absent -%}
+      {{ __rhc_empty_string }}
+      {%-   elif 'password' not in rhc_proxy -%}
+      {{ omit }}
+      {%-   else -%}
+      {{ rhc_proxy.password }}
+      {%- endif %}"
+    force_register: "{{ rhc_state | d('present') == 'reconnect' }}"
+    environment: "{{ rhc_environments | join(',')
+      if (rhc_environments | length > 0
+          and rhc_state | d('present') != 'absent') else omit }}"
+    rhsm_baseurl: "{{ rhc_baseurl
+      if (not rhc_baseurl is none
+          and rhc_baseurl != omit)
+      else omit }}"
+  when:
+    - __rhc_is_rh_distro
+    - ansible_facts['distribution_major_version'] == '7'
+
 - name: Call subscription-manager
   # noqa jinja[spacing]
   community.general.redhat_subscription:
@@ -89,20 +161,48 @@
       if (not rhc_baseurl is none
           and rhc_baseurl != omit)
       else omit }}"
+  when:
+    - not (__rhc_is_rh_distro and
+        ansible_facts['distribution_major_version'] == '7')
 
 - name: Configure subscribed system
   when:
     - rhc_state | d("present") in ["present", "reconnect"]
   block:
+    - name: Set or unset the release - EL7
+      rhsm_release_el7:
+        release: "{{ rhc_release if rhc_release != __rhc_state_absent
+          else omit }}"
+      when:
+        - __rhc_is_rh_distro
+        - ansible_facts['distribution_major_version'] == '7'
+        - rhc_state | d("present") == "present"
+        - not rhc_release is none
+        - rhc_release != omit
+        - __rhc_subman_identity.rc == 0
+
     - name: Set or unset the release
       community.general.rhsm_release:
         release: "{{ rhc_release if rhc_release != __rhc_state_absent
           else omit }}"
       when:
+        - not (__rhc_is_rh_distro and
+            ansible_facts['distribution_major_version'] == '7')
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
         - __rhc_subman_identity.rc == 0
+
+    - name: Configure repositories - EL7
+      rhsm_repository_el7:
+        name: "{{ item.name }}"
+        state: "{{ item.state | d('enabled') }}"
+        purge: false
+      loop: "{{ rhc_repositories }}"
+      when:
+        - __rhc_is_rh_distro
+        - ansible_facts['distribution_major_version'] == '7'
+        - ( rhc_repositories | d([]) ) | length > 0
 
     - name: Configure repositories
       community.general.rhsm_repository:
@@ -111,4 +211,6 @@
         purge: false
       loop: "{{ rhc_repositories }}"
       when:
+        - not (__rhc_is_rh_distro and
+            ansible_facts['distribution_major_version'] == '7')
         - ( rhc_repositories | d([]) ) | length > 0

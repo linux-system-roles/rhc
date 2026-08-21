@@ -90,8 +90,7 @@
           and rhc_baseurl != omit)
       else omit }}"
   when:
-    - __rhc_is_rh_distro
-    - ansible_facts['distribution_major_version'] == '7'
+    - __rhc_is_rh_distro_7
 
 - name: Call subscription-manager
   # noqa jinja[spacing]
@@ -162,8 +161,7 @@
           and rhc_baseurl != omit)
       else omit }}"
   when:
-    - not (__rhc_is_rh_distro and
-        ansible_facts['distribution_major_version'] == '7')
+    - not __rhc_is_rh_distro_7
 
 - name: Configure subscribed system
   when:
@@ -174,8 +172,7 @@
         release: "{{ rhc_release if rhc_release != __rhc_state_absent
           else omit }}"
       when:
-        - __rhc_is_rh_distro
-        - ansible_facts['distribution_major_version'] == '7'
+        - __rhc_is_rh_distro_7
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
@@ -186,8 +183,7 @@
         release: "{{ rhc_release if rhc_release != __rhc_state_absent
           else omit }}"
       when:
-        - not (__rhc_is_rh_distro and
-            ansible_facts['distribution_major_version'] == '7')
+        - not __rhc_is_rh_distro_7
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
@@ -200,8 +196,7 @@
         purge: false
       loop: "{{ rhc_repositories }}"
       when:
-        - __rhc_is_rh_distro
-        - ansible_facts['distribution_major_version'] == '7'
+        - __rhc_is_rh_distro_7
         - ( rhc_repositories | d([]) ) | length > 0
 
     - name: Configure repositories
@@ -211,6 +206,5 @@
         purge: false
       loop: "{{ rhc_repositories }}"
       when:
-        - not (__rhc_is_rh_distro and
-            ansible_facts['distribution_major_version'] == '7')
+        - not __rhc_is_rh_distro_7
         - ( rhc_repositories | d([]) ) | length > 0

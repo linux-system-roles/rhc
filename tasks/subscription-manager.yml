@@ -21,9 +21,9 @@
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
 
-- name: Call subscription-manager - EL7
+- name: Call subscription-manager - ansible 2.9
   # noqa jinja[spacing]
-  redhat_subscription_el7:
+  redhat_subscription_ansible_29:
     state: "{{ 'present'
       if (rhc_state | d('present') == 'reconnect')
       else rhc_state | d('present') }}"
@@ -90,11 +90,11 @@
           and rhc_baseurl != omit)
       else omit }}"
   when:
-    - __rhc_is_rh_distro_7
+    - ansible_version.full is version('2.10', '<')
 
-# Bare module name (not FQCN): on EL7 (ansible 2.9) the collection is not
+# Bare module name (not FQCN): on ansible 2.9 the collection is not
 # installable and an unresolvable FQCN aborts play parsing even for a task
-# skipped by "when". The bare name resolves to the 2.9 builtin on EL7
+# skipped by "when". The bare name resolves to the ansible 2.9 builtin
 # (skipped here) and redirects to the latest collection module elsewhere.
 - name: Call subscription-manager
   # noqa jinja[spacing]
@@ -165,51 +165,51 @@
           and rhc_baseurl != omit)
       else omit }}"
   when:
-    - not __rhc_is_rh_distro_7
+    - ansible_version.full is version('2.10', '>=')
 
 - name: Configure subscribed system
   when:
     - rhc_state | d("present") in ["present", "reconnect"]
   block:
-    - name: Set or unset the release - EL7
-      rhsm_release_el7:
+    - name: Set or unset the release - ansible 2.9
+      rhsm_release_ansible_29:
         release: "{{ rhc_release if rhc_release != __rhc_state_absent
           else omit }}"
       when:
-        - __rhc_is_rh_distro_7
+        - ansible_version.full is version('2.10', '<')
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
         - __rhc_subman_identity.rc == 0
 
-    # Bare module name (not FQCN): on EL7 (ansible 2.9) the collection is not
+    # Bare module name (not FQCN): on ansible 2.9 the collection is not
     # installable and an unresolvable FQCN aborts play parsing even for a task
-    # skipped by "when". The bare name resolves to the 2.9 builtin on EL7
+    # skipped by "when". The bare name resolves to the ansible 2.9 builtin
     # (skipped here) and redirects to the latest collection module elsewhere.
     - name: Set or unset the release
       rhsm_release:  # noqa fqcn
         release: "{{ rhc_release if rhc_release != __rhc_state_absent
           else omit }}"
       when:
-        - not __rhc_is_rh_distro_7
+        - ansible_version.full is version('2.10', '>=')
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
         - __rhc_subman_identity.rc == 0
 
-    - name: Configure repositories - EL7
-      rhsm_repository_el7:
+    - name: Configure repositories - ansible 2.9
+      rhsm_repository_ansible_29:
         name: "{{ item.name }}"
         state: "{{ item.state | d('enabled') }}"
         purge: false
       loop: "{{ rhc_repositories }}"
       when:
-        - __rhc_is_rh_distro_7
+        - ansible_version.full is version('2.10', '<')
         - ( rhc_repositories | d([]) ) | length > 0
 
-    # Bare module name (not FQCN): on EL7 (ansible 2.9) the collection is not
+    # Bare module name (not FQCN): on ansible 2.9 the collection is not
     # installable and an unresolvable FQCN aborts play parsing even for a task
-    # skipped by "when". The bare name resolves to the 2.9 builtin on EL7
+    # skipped by "when". The bare name resolves to the ansible 2.9 builtin
     # (skipped here) and redirects to the latest collection module elsewhere.
     - name: Configure repositories
       rhsm_repository:  # noqa fqcn
@@ -218,5 +218,5 @@
         purge: false
       loop: "{{ rhc_repositories }}"
       when:
-        - not __rhc_is_rh_distro_7
+        - ansible_version.full is version('2.10', '>=')
         - ( rhc_repositories | d([]) ) | length > 0

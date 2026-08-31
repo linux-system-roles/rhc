@@ -12,7 +12,7 @@ __metaclass__ = type
 
 
 DOCUMENTATION = r"""
-module: redhat_subscription_ansible_29
+module: redhat_subscription_python_36
 short_description: Manage registration and subscriptions to RHSM using C(subscription-manager)
 description:
   - Manage registration and subscription to the Red Hat Subscription Management entitlement platform using the C(subscription-manager)

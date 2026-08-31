@@ -10,7 +10,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-module: rhsm_repository_ansible_29
+module: rhsm_repository_python_36
 short_description: Manage RHSM repositories using the subscription-manager command
 description:
   - Manage (Enable/Disable) RHSM repositories to the Red Hat Subscription Management entitlement platform using the C(subscription-manager)

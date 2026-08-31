@@ -21,9 +21,12 @@
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
 
-- name: Call subscription-manager - ansible 2.9
+# On managed nodes with python < 3.7, the latest community.general.redhat_subscription
+# fails to import ("from __future__ import annotations" requires python >=
+# 3.7), so use the dependency-free vendored redhat_subscription_python_36 module.
+- name: Call subscription-manager - python 3.6
   # noqa jinja[spacing]
-  redhat_subscription_ansible_29:
+  redhat_subscription_python_36:
     state: "{{ 'present'
       if (rhc_state | d('present') == 'reconnect')
       else rhc_state | d('present') }}"
@@ -90,12 +93,12 @@
           and rhc_baseurl != omit)
       else omit }}"
   when:
-    - ansible_version.full is version('2.10', '<')
+    - not (ansible_facts['python_version'] is version('3.7', '>='))
 
-# Bare module name (not FQCN): on ansible 2.9 the collection is not
-# installable and an unresolvable FQCN aborts play parsing even for a task
-# skipped by "when". The bare name resolves to the ansible 2.9 builtin
-# (skipped here) and redirects to the latest collection module elsewhere.
+# Bare module name (not FQCN): an unresolvable FQCN aborts play parsing on
+# ansible 2.9 even for a task skipped by "when", so the bare name is used.
+# This runs only on managed nodes with python >= 3.7, where the bare name
+# resolves to the latest collection module.
 - name: Call subscription-manager
   # noqa jinja[spacing]
   redhat_subscription:  # noqa fqcn
@@ -165,52 +168,58 @@
           and rhc_baseurl != omit)
       else omit }}"
   when:
-    - ansible_version.full is version('2.10', '>=')
+    - ansible_facts['python_version'] is version('3.7', '>=')
 
 - name: Configure subscribed system
   when:
     - rhc_state | d("present") in ["present", "reconnect"]
   block:
-    - name: Set or unset the release - ansible 2.9
-      rhsm_release_ansible_29:
+    # On managed nodes with python < 3.7, the latest community.general.rhsm_release
+    # fails to import ("from __future__ import annotations" requires python >=
+    # 3.7), so use the dependency-free vendored rhsm_release_python_36 module.
+    - name: Set or unset the release - python 3.6
+      rhsm_release_python_36:
         release: "{{ rhc_release if rhc_release != __rhc_state_absent
           else omit }}"
       when:
-        - ansible_version.full is version('2.10', '<')
+        - not (ansible_facts['python_version'] is version('3.7', '>='))
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
         - __rhc_subman_identity.rc == 0
 
-    # Bare module name (not FQCN): on ansible 2.9 the collection is not
-    # installable and an unresolvable FQCN aborts play parsing even for a task
-    # skipped by "when". The bare name resolves to the ansible 2.9 builtin
-    # (skipped here) and redirects to the latest collection module elsewhere.
+    # Bare module name (not FQCN): an unresolvable FQCN aborts play parsing on
+    # ansible 2.9 even for a task skipped by "when", so the bare name is used.
+    # This runs only on managed nodes with python >= 3.7, where the bare name
+    # resolves to the latest collection module.
     - name: Set or unset the release
       rhsm_release:  # noqa fqcn
         release: "{{ rhc_release if rhc_release != __rhc_state_absent
           else omit }}"
       when:
-        - ansible_version.full is version('2.10', '>=')
+        - ansible_facts['python_version'] is version('3.7', '>=')
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
         - __rhc_subman_identity.rc == 0
 
-    - name: Configure repositories - ansible 2.9
-      rhsm_repository_ansible_29:
+    # On managed nodes with python < 3.7, the latest community.general.rhsm_repository
+    # fails to import ("from __future__ import annotations" requires python >=
+    # 3.7), so use the dependency-free vendored rhsm_repository_python_36 module.
+    - name: Configure repositories - python 3.6
+      rhsm_repository_python_36:
         name: "{{ item.name }}"
         state: "{{ item.state | d('enabled') }}"
         purge: false
       loop: "{{ rhc_repositories }}"
       when:
-        - ansible_version.full is version('2.10', '<')
+        - not (ansible_facts['python_version'] is version('3.7', '>='))
         - ( rhc_repositories | d([]) ) | length > 0
 
-    # Bare module name (not FQCN): on ansible 2.9 the collection is not
-    # installable and an unresolvable FQCN aborts play parsing even for a task
-    # skipped by "when". The bare name resolves to the ansible 2.9 builtin
-    # (skipped here) and redirects to the latest collection module elsewhere.
+    # Bare module name (not FQCN): an unresolvable FQCN aborts play parsing on
+    # ansible 2.9 even for a task skipped by "when", so the bare name is used.
+    # This runs only on managed nodes with python >= 3.7, where the bare name
+    # resolves to the latest collection module.
     - name: Configure repositories
       rhsm_repository:  # noqa fqcn
         name: "{{ item.name }}"
@@ -218,5 +227,5 @@
         purge: false
       loop: "{{ rhc_repositories }}"
       when:
-        - ansible_version.full is version('2.10', '>=')
+        - ansible_facts['python_version'] is version('3.7', '>=')
         - ( rhc_repositories | d([]) ) | length > 0

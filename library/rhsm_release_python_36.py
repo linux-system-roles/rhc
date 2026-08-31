@@ -10,7 +10,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-module: rhsm_release_ansible_29
+module: rhsm_release_python_36
 short_description: Set or Unset RHSM Release version
 description:
   - Sets or unsets the release version used by RHSM repositories.

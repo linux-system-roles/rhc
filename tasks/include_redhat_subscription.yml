@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: MIT
+---
+# redhat_subscription module call split by python version; args come from
+# __rhc_redhat_subscription_args.
+
+# python < 3.7: the latest community.general.redhat_subscription needs python
+# >= 3.7 to import, so use the vendored redhat_subscription_python_36 copy.
+- name: Call subscription-manager - python 3.6
+  redhat_subscription_python_36: "{{ __rhc_redhat_subscription_args }}"
+  when:
+    - not (ansible_facts['python_version'] is version('3.7', '>='))
+
+# python >= 3.7: bare name, not FQCN, because an unresolvable FQCN aborts play
+# parsing on ansible 2.9 even when skipped; resolves to
+# community.general.redhat_subscription.
+- name: Call subscription-manager
+  redhat_subscription: "{{ __rhc_redhat_subscription_args }}"  # noqa fqcn
+  when:
+    - ansible_facts['python_version'] is version('3.7', '>=')

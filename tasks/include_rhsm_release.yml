@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT
+---
+# Shared helper included from subscription-manager.yml with include_tasks. The
+# rhsm_release arguments are passed in as the __rhc_rhsm_release_args dict.
+# include_tasks is dynamic: its tasks are only parsed when the include runs, and
+# a task skipped by its "when" (the community.general module on ansible 2.9)
+# never has its FQCN resolved, so it cannot abort play parsing the way it would
+# in a statically parsed task file.
+
+# On managed nodes with python < 3.7, the latest community.general.rhsm_release
+# fails to import ("from __future__ import annotations" requires python >=
+# 3.7), so use the dependency-free vendored rhsm_release_python_36 module.
+- name: Set or unset the release - python 3.6
+  rhsm_release_python_36: "{{ __rhc_rhsm_release_args }}"
+  when:
+    - not (ansible_facts['python_version'] is version('3.7', '>='))
+
+# On managed nodes with python >= 3.7, use community.general.rhsm_release.
+- name: Set or unset the release
+  community.general.rhsm_release: "{{ __rhc_rhsm_release_args }}"
+  when:
+    - ansible_facts['python_version'] is version('3.7', '>=')

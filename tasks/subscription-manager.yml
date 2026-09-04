@@ -21,211 +21,114 @@
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
 
-# On managed nodes with python < 3.7, the latest community.general.redhat_subscription
-# fails to import ("from __future__ import annotations" requires python >=
-# 3.7), so use the dependency-free vendored redhat_subscription_python_36 module.
-- name: Call subscription-manager - python 3.6
-  # noqa jinja[spacing]
-  redhat_subscription_python_36:
-    state: "{{ 'present'
-      if (rhc_state | d('present') == 'reconnect')
-      else rhc_state | d('present') }}"
-    username: "{{ rhc_auth.login.username | d(omit) }}"
-    password: "{{ rhc_auth.login.password | d(omit) }}"
-    activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
-      if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
-    org_id: "{{ rhc_organization
-      if (not rhc_organization is none
-          and rhc_organization != omit)
-      else omit }}"
-    server_hostname: "{{ rhc_server.hostname | d(omit) }}"
-    server_port: "{{ rhc_server.port | d(omit) }}"
-    server_prefix: "{{ rhc_server.prefix | d(omit) }}"
-    server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
-      else rhc_server.insecure | ternary('1', '0') }}"
-    release: "{{ rhc_release
-      if (rhc_state | d('present') != 'absent'
-           and rhc_release != __rhc_state_absent
-           and not rhc_release is none
-           and rhc_release != omit)
-      else omit }}"
-    server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'hostname' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.hostname }}
-      {%- endif %}"
-    server_proxy_scheme: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ 'http' }}
-      {%-   elif 'scheme' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.scheme }}
-      {%- endif %}"
-    server_proxy_port: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'port' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.port }}
-      {%- endif %}"
-    server_proxy_user: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'username' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.username }}
-      {%- endif %}"
-    server_proxy_password: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'password' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.password }}
-      {%- endif %}"
-    force_register: "{{ rhc_state | d('present') == 'reconnect' }}"
-    environment: "{{ rhc_environments | join(',')
-      if (rhc_environments | length > 0
-          and rhc_state | d('present') != 'absent') else omit }}"
-    rhsm_baseurl: "{{ rhc_baseurl
-      if (not rhc_baseurl is none
-          and rhc_baseurl != omit)
-      else omit }}"
-  when:
-    - not (ansible_facts['python_version'] is version('3.7', '>='))
-
-# Bare module name (not FQCN): an unresolvable FQCN aborts play parsing on
-# ansible 2.9 even for a task skipped by "when", so the bare name is used.
-# This runs only on managed nodes with python >= 3.7, where the bare name
-# resolves to the latest collection module.
+# The vendored (python < 3.7) and community.general (python >= 3.7)
+# redhat_subscription calls live in include_redhat_subscription.yml; it is pulled
+# in with include_tasks so the community.general FQCN is only parsed at runtime
+# and cannot abort play parsing on ansible 2.9. The module args are passed as a
+# single dict variable.
 - name: Call subscription-manager
-  # noqa jinja[spacing]
-  redhat_subscription:  # noqa fqcn
-    state: "{{ 'present'
-      if (rhc_state | d('present') == 'reconnect')
-      else rhc_state | d('present') }}"
-    username: "{{ rhc_auth.login.username | d(omit) }}"
-    password: "{{ rhc_auth.login.password | d(omit) }}"
-    activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
-      if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
-    org_id: "{{ rhc_organization
-      if (not rhc_organization is none
-          and rhc_organization != omit)
-      else omit }}"
-    server_hostname: "{{ rhc_server.hostname | d(omit) }}"
-    server_port: "{{ rhc_server.port | d(omit) }}"
-    server_prefix: "{{ rhc_server.prefix | d(omit) }}"
-    server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
-      else rhc_server.insecure | ternary('1', '0') }}"
-    release: "{{ rhc_release
-      if (rhc_state | d('present') != 'absent'
-           and rhc_release != __rhc_state_absent
-           and not rhc_release is none
-           and rhc_release != omit)
-      else omit }}"
-    server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'hostname' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.hostname }}
-      {%- endif %}"
-    server_proxy_scheme: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ 'http' }}
-      {%-   elif 'scheme' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.scheme }}
-      {%- endif %}"
-    server_proxy_port: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'port' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.port }}
-      {%- endif %}"
-    server_proxy_user: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'username' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.username }}
-      {%- endif %}"
-    server_proxy_password: "{% if rhc_proxy == __rhc_state_absent -%}
-      {{ __rhc_empty_string }}
-      {%-   elif 'password' not in rhc_proxy -%}
-      {{ omit }}
-      {%-   else -%}
-      {{ rhc_proxy.password }}
-      {%- endif %}"
-    force_register: "{{ rhc_state | d('present') == 'reconnect' }}"
-    environment: "{{ rhc_environments | join(',')
-      if (rhc_environments | length > 0
-          and rhc_state | d('present') != 'absent') else omit }}"
-    rhsm_baseurl: "{{ rhc_baseurl
-      if (not rhc_baseurl is none
-          and rhc_baseurl != omit)
-      else omit }}"
-  when:
-    - ansible_facts['python_version'] is version('3.7', '>=')
+  include_tasks: include_redhat_subscription.yml
+  vars:
+    __rhc_redhat_subscription_args:  # noqa jinja[spacing]
+      state: "{{ 'present'
+        if (rhc_state | d('present') == 'reconnect')
+        else rhc_state | d('present') }}"
+      username: "{{ rhc_auth.login.username | d(omit) }}"
+      password: "{{ rhc_auth.login.password | d(omit) }}"
+      activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',')
+        if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
+      org_id: "{{ rhc_organization
+        if (not rhc_organization is none
+            and rhc_organization != omit)
+        else omit }}"
+      server_hostname: "{{ rhc_server.hostname | d(omit) }}"
+      server_port: "{{ rhc_server.port | d(omit) }}"
+      server_prefix: "{{ rhc_server.prefix | d(omit) }}"
+      server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit)
+        else rhc_server.insecure | ternary('1', '0') }}"
+      release: "{{ rhc_release
+        if (rhc_state | d('present') != 'absent'
+             and rhc_release != __rhc_state_absent
+             and not rhc_release is none
+             and rhc_release != omit)
+        else omit }}"
+      server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%}
+        {{ __rhc_empty_string }}
+        {%-   elif 'hostname' not in rhc_proxy -%}
+        {{ omit }}
+        {%-   else -%}
+        {{ rhc_proxy.hostname }}
+        {%- endif %}"
+      server_proxy_scheme: "{% if rhc_proxy == __rhc_state_absent -%}
+        {{ 'http' }}
+        {%-   elif 'scheme' not in rhc_proxy -%}
+        {{ omit }}
+        {%-   else -%}
+        {{ rhc_proxy.scheme }}
+        {%- endif %}"
+      server_proxy_port: "{% if rhc_proxy == __rhc_state_absent -%}
+        {{ __rhc_empty_string }}
+        {%-   elif 'port' not in rhc_proxy -%}
+        {{ omit }}
+        {%-   else -%}
+        {{ rhc_proxy.port }}
+        {%- endif %}"
+      server_proxy_user: "{% if rhc_proxy == __rhc_state_absent -%}
+        {{ __rhc_empty_string }}
+        {%-   elif 'username' not in rhc_proxy -%}
+        {{ omit }}
+        {%-   else -%}
+        {{ rhc_proxy.username }}
+        {%- endif %}"
+      server_proxy_password: "{% if rhc_proxy == __rhc_state_absent -%}
+        {{ __rhc_empty_string }}
+        {%-   elif 'password' not in rhc_proxy -%}
+        {{ omit }}
+        {%-   else -%}
+        {{ rhc_proxy.password }}
+        {%- endif %}"
+      force_register: "{{ rhc_state | d('present') == 'reconnect' }}"
+      environment: "{{ rhc_environments | join(',')
+        if (rhc_environments | length > 0
+            and rhc_state | d('present') != 'absent') else omit }}"
+      rhsm_baseurl: "{{ rhc_baseurl
+        if (not rhc_baseurl is none
+            and rhc_baseurl != omit)
+        else omit }}"
 
 - name: Configure subscribed system
   when:
     - rhc_state | d("present") in ["present", "reconnect"]
   block:
-    # On managed nodes with python < 3.7, the latest community.general.rhsm_release
-    # fails to import ("from __future__ import annotations" requires python >=
-    # 3.7), so use the dependency-free vendored rhsm_release_python_36 module.
-    - name: Set or unset the release - python 3.6
-      rhsm_release_python_36:
-        release: "{{ rhc_release if rhc_release != __rhc_state_absent
-          else omit }}"
-      when:
-        - not (ansible_facts['python_version'] is version('3.7', '>='))
-        - rhc_state | d("present") == "present"
-        - not rhc_release is none
-        - rhc_release != omit
-        - __rhc_subman_identity.rc == 0
-
-    # Bare module name (not FQCN): an unresolvable FQCN aborts play parsing on
-    # ansible 2.9 even for a task skipped by "when", so the bare name is used.
-    # This runs only on managed nodes with python >= 3.7, where the bare name
-    # resolves to the latest collection module.
+    # The vendored (python < 3.7) and community.general (python >= 3.7)
+    # rhsm_release calls live in include_rhsm_release.yml; it is pulled in with
+    # include_tasks so the community.general FQCN is only parsed at runtime and
+    # cannot abort play parsing on ansible 2.9. The non-python "when" conditions
+    # are kept here.
     - name: Set or unset the release
-      rhsm_release:  # noqa fqcn
-        release: "{{ rhc_release if rhc_release != __rhc_state_absent
-          else omit }}"
+      include_tasks: include_rhsm_release.yml
+      vars:
+        __rhc_rhsm_release_args:
+          release: "{{ rhc_release if rhc_release != __rhc_state_absent
+            else omit }}"
       when:
-        - ansible_facts['python_version'] is version('3.7', '>=')
         - rhc_state | d("present") == "present"
         - not rhc_release is none
         - rhc_release != omit
         - __rhc_subman_identity.rc == 0
 
-    # On managed nodes with python < 3.7, the latest community.general.rhsm_repository
-    # fails to import ("from __future__ import annotations" requires python >=
-    # 3.7), so use the dependency-free vendored rhsm_repository_python_36 module.
-    - name: Configure repositories - python 3.6
-      rhsm_repository_python_36:
-        name: "{{ item.name }}"
-        state: "{{ item.state | d('enabled') }}"
-        purge: false
-      loop: "{{ rhc_repositories }}"
-      when:
-        - not (ansible_facts['python_version'] is version('3.7', '>='))
-        - ( rhc_repositories | d([]) ) | length > 0
-
-    # Bare module name (not FQCN): an unresolvable FQCN aborts play parsing on
-    # ansible 2.9 even for a task skipped by "when", so the bare name is used.
-    # This runs only on managed nodes with python >= 3.7, where the bare name
-    # resolves to the latest collection module.
+    # The vendored (python < 3.7) and community.general (python >= 3.7)
+    # rhsm_repository calls live in include_rhsm_repository.yml; it is pulled in
+    # with include_tasks so the community.general FQCN is only parsed at runtime
+    # and cannot abort play parsing on ansible 2.9. The loop and non-python
+    # "when" are kept here.
     - name: Configure repositories
-      rhsm_repository:  # noqa fqcn
-        name: "{{ item.name }}"
-        state: "{{ item.state | d('enabled') }}"
-        purge: false
+      include_tasks: include_rhsm_repository.yml
+      vars:
+        __rhc_rhsm_repository_args:
+          name: "{{ item.name }}"
+          state: "{{ item.state | d('enabled') }}"
+          purge: false
       loop: "{{ rhc_repositories }}"
       when:
-        - ansible_facts['python_version'] is version('3.7', '>=')
         - ( rhc_repositories | d([]) ) | length > 0

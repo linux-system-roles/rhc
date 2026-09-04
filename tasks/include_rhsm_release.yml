@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+---
+# rhsm_release module call split by python version; args come from
+# __rhc_rhsm_release_args.
+
+# python < 3.7: the latest community.general.rhsm_release needs python >= 3.7 to
+# import, so use the vendored rhsm_release_python_36 copy.
+- name: Set or unset the release - python 3.6
+  rhsm_release_python_36: "{{ __rhc_rhsm_release_args }}"
+  when:
+    - not (ansible_facts['python_version'] is version('3.7', '>='))
+
+# python >= 3.7: bare name, not FQCN, because an unresolvable FQCN aborts play
+# parsing on ansible 2.9 even when skipped; resolves to community.general.rhsm_release.
+- name: Set or unset the release
+  rhsm_release: "{{ __rhc_rhsm_release_args }}"  # noqa fqcn
+  when:
+    - ansible_facts['python_version'] is version('3.7', '>=')

@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT
+---
+# Shared helper included from subscription-manager.yml with include_tasks. The
+# redhat_subscription arguments are passed in as the
+# __rhc_redhat_subscription_args dict. include_tasks is dynamic: its tasks are
+# only parsed when the include runs, and a task skipped by its "when" (the
+# community.general module on ansible 2.9) never has its FQCN resolved, so it
+# cannot abort play parsing the way it would in a statically parsed task file.
+
+# On managed nodes with python < 3.7, the latest community.general.redhat_subscription
+# fails to import ("from __future__ import annotations" requires python >=
+# 3.7), so use the dependency-free vendored redhat_subscription_python_36 module.
+- name: Call subscription-manager - python 3.6
+  redhat_subscription_python_36: "{{ __rhc_redhat_subscription_args }}"
+  when:
+    - not (ansible_facts['python_version'] is version('3.7', '>='))
+
+# On managed nodes with python >= 3.7, use community.general.redhat_subscription.
+- name: Call subscription-manager
+  community.general.redhat_subscription: "{{ __rhc_redhat_subscription_args }}"
+  when:
+    - ansible_facts['python_version'] is version('3.7', '>=')

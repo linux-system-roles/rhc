@@ -17,8 +17,8 @@ description:
     command.
 author: Giovanni Sciortino (@giovannisciortino)
 notes:
-  - In order to manage RHSM repositories the system must be already registered to RHSM manually or using the Ansible M(community.general.redhat_subscription)
-    module.
+  - In order to manage RHSM repositories the system must be already registered to RHSM manually or using the Ansible
+    M(community.general.redhat_subscription) module.
   - It is possible to interact with C(subscription-manager) only as root, so root permissions are required to successfully
     run this module.
 requirements:

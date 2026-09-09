@@ -39,7 +39,6 @@
   when:
     - rhc_state | d('present') in ['present', 'reconnect']
     - "'activation_keys' in rhc_auth"
-    - "'keys' in rhc_auth.activation_keys | d({})"
 
 - name: Assert rhc_proxy has only state when state is absent
   ansible.builtin.assert:

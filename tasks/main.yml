@@ -3,6 +3,9 @@
 - name: Set ansible_facts required by role
   include_tasks: set_vars.yml
 
+- name: Validate role parameters
+  ansible.builtin.include_tasks: assert_role_vars.yml
+
 - name: Handle insights unregistration
   include_tasks: insights-client-unregistration.yml
   when:

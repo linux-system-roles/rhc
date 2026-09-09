@@ -1,0 +1,263 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Verify invalid parameters are rejected
+  hosts: all
+  tasks:
+    - name: Run invalid input tests
+      block:
+        # ====================================================
+        # Section 1: Verify role works with valid parameters
+        # ====================================================
+        - name: Run role with valid parameters
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+          vars:
+            rhc_state: absent
+
+        # ====================================================
+        # Section 2: argument_specs validation (Ansible 2.11+)
+        # ====================================================
+        - name: Run argument specs validation tests
+          when: ansible_version.full is version("2.11", ">=")
+          block:
+            - name: Argument specs reject missing required repository name
+              block:
+                - name: Run role without required repository name
+                  ansible.builtin.include_role:
+                    name: linux-system-roles.rhc
+                  vars:
+                    rhc_state: absent
+                    rhc_repositories:
+                      - state: enabled
+              rescue:
+                - name: Mark missing repository name rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_missing_repo_name_failed: true
+                  when: >-
+                    'missing required arguments' in
+                    (ansible_failed_result | default({}) | to_json)
+
+            - name: Assert missing repository name was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_missing_repo_name_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject rhc_repositories entries
+                  missing the required name field
+
+            - name: Argument specs reject non-string rhc_state
+              block:
+                - name: Run role with non-string rhc_state
+                  ansible.builtin.include_role:
+                    name: linux-system-roles.rhc
+                  vars:
+                    rhc_state: 123
+              rescue:
+                - name: Mark invalid rhc_state type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_rhc_state_type_failed: true
+
+            - name: Assert invalid rhc_state type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_rhc_state_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject rhc_state with type int
+
+            - name: Argument specs reject invalid rhc_state choice
+              block:
+                - name: Run role with invalid rhc_state value
+                  ansible.builtin.include_role:
+                    name: linux-system-roles.rhc
+                  vars:
+                    rhc_state: invalid_choice
+              rescue:
+                - name: Mark invalid rhc_state choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_rhc_state_choice_failed: true
+
+            - name: Assert invalid rhc_state choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_rhc_state_choice_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject rhc_state value
+                  'invalid_choice'
+
+            - name: Argument specs reject invalid rhc_insights.state choice
+              block:
+                - name: Run role with invalid rhc_insights.state value
+                  ansible.builtin.include_role:
+                    name: linux-system-roles.rhc
+                  vars:
+                    rhc_state: absent
+                    rhc_insights:
+                      state: invalid_choice
+              rescue:
+                - name: Mark invalid rhc_insights.state choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_rhc_insights_state_choice_failed: true
+
+            - name: Assert invalid rhc_insights.state choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_rhc_insights_state_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject rhc_insights.state value
+                  'invalid_choice'
+
+            - name: Argument specs reject invalid repository state choice
+              block:
+                - name: Run role with invalid repository state value
+                  ansible.builtin.include_role:
+                    name: linux-system-roles.rhc
+                  vars:
+                    rhc_state: absent
+                    rhc_repositories:
+                      - name: test-repo
+                        state: invalid_choice
+              rescue:
+                - name: Mark invalid repository state choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_repo_state_choice_failed: true
+
+            - name: Assert invalid repository state choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_repo_state_choice_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject rhc_repositories state value
+                  'invalid_choice'
+
+            - name: Argument specs reject non-boolean rhc_insights.autoupdate
+              block:
+                - name: Run role with non-boolean rhc_insights.autoupdate
+                  ansible.builtin.include_role:
+                    name: linux-system-roles.rhc
+                  vars:
+                    rhc_state: absent
+                    rhc_insights:
+                      autoupdate: not_a_bool
+              rescue:
+                - name: Mark invalid rhc_insights.autoupdate type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_autoupdate_type_failed: true
+
+            - name: Assert invalid rhc_insights.autoupdate type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_autoupdate_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject rhc_insights.autoupdate
+                  with type str
+
+        # ====================================================
+        # Section 3: assert_role_vars validation (all versions)
+        # ====================================================
+        - name: Assert rejects rhc_release as a list
+          block:
+            - name: Run role with rhc_release as a list
+              ansible.builtin.include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_state: absent
+                rhc_release:
+                  - "8.6"
+          rescue:
+            - name: Mark rhc_release list rejected
+              ansible.builtin.set_fact:
+                __invalid_input_rhc_release_list_failed: true
+
+        - name: Assert rhc_release as list was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_rhc_release_list_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject rhc_release when given
+              a list value
+
+        - name: Assert rejects rhc_baseurl as an integer
+          block:
+            - name: Run role with rhc_baseurl as an integer
+              ansible.builtin.include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_state: absent
+                rhc_baseurl: 123
+          rescue:
+            - name: Mark rhc_baseurl integer rejected
+              ansible.builtin.set_fact:
+                __invalid_input_rhc_baseurl_int_failed: true
+
+        - name: Assert rhc_baseurl as integer was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_rhc_baseurl_int_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject rhc_baseurl when given
+              an integer value
+
+        - name: Assert rejects rhc_insights.tags as a string
+          block:
+            - name: Run role with rhc_insights.tags as a string
+              ansible.builtin.include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_state: absent
+                rhc_insights:
+                  tags: not_a_dict
+          rescue:
+            - name: Mark rhc_insights.tags string rejected
+              ansible.builtin.set_fact:
+                __invalid_input_rhc_insights_tags_str_failed: true
+
+        - name: Assert rhc_insights.tags as string was rejected
+          ansible.builtin.assert:
+            that:
+              - >-
+                __invalid_input_rhc_insights_tags_str_failed
+                | default(false)
+            fail_msg: >-
+              assert_role_vars should reject rhc_insights.tags when given
+              a string value
+
+        - name: Assert rejects rhc_insights.ansible_host as an integer
+          block:
+            - name: Run role with rhc_insights.ansible_host as an integer
+              ansible.builtin.include_role:
+                name: linux-system-roles.rhc
+              vars:
+                rhc_state: absent
+                rhc_insights:
+                  ansible_host: 123
+          rescue:
+            - name: Mark rhc_insights.ansible_host integer rejected
+              ansible.builtin.set_fact:
+                __invalid_input_rhc_insights_ansible_host_int_failed: true
+
+        - name: Assert rhc_insights.ansible_host as integer was rejected
+          ansible.builtin.assert:
+            that:
+              - >-
+                __invalid_input_rhc_insights_ansible_host_int_failed
+                | default(false)
+            fail_msg: >-
+              assert_role_vars should reject rhc_insights.ansible_host
+              when given an integer value
+
+      always:
+        - name: Clear test facts
+          ansible.builtin.set_fact:
+            __invalid_input_missing_repo_name_failed:
+            __invalid_input_rhc_state_type_failed:
+            __invalid_input_rhc_state_choice_failed:
+            __invalid_input_rhc_insights_state_choice_failed:
+            __invalid_input_repo_state_choice_failed:
+            __invalid_input_autoupdate_type_failed:
+            __invalid_input_rhc_release_list_failed:
+            __invalid_input_rhc_baseurl_int_failed:
+            __invalid_input_rhc_insights_tags_str_failed:
+            __invalid_input_rhc_insights_ansible_host_int_failed:
+          tags: tests::cleanup

@@ -1,0 +1,231 @@
+# SPDX-License-Identifier: MIT
+---
+argument_specs:
+  main:
+    short_description: The rhc role.
+    description: >
+      The rhc role connects RHEL systems to Red Hat subscription
+      management and Red Hat Insights. It configures
+      subscription-manager registration, repository enablement,
+      release locking, Insights client registration, remediation,
+      and proxy settings.
+    options:
+      rhc_auth:
+        type: dict
+        default: {}
+        description: >
+          Authentication credentials for subscription-manager
+          registration. Accepts either a `login` dictionary with
+          `username` and `password`, or an `activation_keys`
+          dictionary with a `keys` list. Only one authentication
+          method may be specified at a time.
+        options:
+          login:
+            type: dict
+            description: >
+              Username and password authentication for
+              subscription-manager.
+            options:
+              username:
+                type: str
+                required: true
+                description: >
+                  The subscription-manager username.
+              password:
+                type: str
+                required: true
+                description: >
+                  The subscription-manager password.
+          activation_keys:
+            type: dict
+            description: >
+              Activation key authentication. Requires
+              `rhc_organization` to be set.
+            options:
+              keys:
+                type: list
+                elements: str
+                required: true
+                description: >
+                  List of activation key names.
+      rhc_baseurl:
+        type: raw
+        default: null
+        description: >
+          The base URL for receiving content from the subscription
+          server. Accepts `null` or a URL string.
+      rhc_environments:
+        type: list
+        elements: str
+        default: []
+        description: >
+          List of content view environments to register against when
+          connecting an unregistered system.
+      rhc_insights:
+        type: dict
+        default:
+          ansible_host: null
+          autoupdate: true
+          display_name: null
+          remediation: present
+          state: present
+          tags: {}
+        description: >
+          Red Hat Insights client configuration for the system.
+        options:
+          ansible_host:
+            type: raw
+            default: null
+            description: >
+              Custom ansible host name for Host Based Inventory
+              (HBI). Accepts `null`, an empty string, a string
+              value, or `{"state": "absent"}` to unset the
+              configured name.
+          autoupdate:
+            type: bool
+            default: true
+            description: >
+              Whether insights-client automatically updates dynamic
+              configuration.
+          display_name:
+            type: raw
+            default: null
+            description: >
+              Custom display name for Host Based Inventory (HBI).
+              Accepts `null`, an empty string, or a string value.
+          remediation:
+            type: str
+            default: present
+            choices:
+              - present
+              - absent
+            description: >
+              Whether Insights remediation is enabled (`present`)
+              or disabled (`absent`). Supported on RHEL 8.4 and
+              later.
+          state:
+            type: str
+            default: present
+            choices:
+              - present
+              - absent
+            description: >
+              Whether the system is connected to Insights
+              (`present`) or disconnected (`absent`).
+          tags:
+            type: raw
+            default: {}
+            description: >
+              Tags applied to the system record in Host Based
+              Inventory. Accepts `null`, an empty dictionary,
+              `{"state": "absent"}` to remove all tags, or a
+              dictionary of arbitrary tag key/value pairs.
+      rhc_organization:
+        type: raw
+        default: null
+        description: >
+          The organization identifier for subscription-manager.
+          Accepts `null` or a string. Required when connecting with
+          activation keys or when the user belongs to multiple
+          organizations.
+      rhc_proxy:
+        type: dict
+        default: {}
+        description: >
+          Proxy server settings for subscription-manager and
+          Insights connections.
+        options:
+          state:
+            type: str
+            choices:
+              - absent
+            description: >
+              When set to `absent`, all proxy configuration is reset
+              and the proxy is disabled.
+          hostname:
+            type: str
+            description: >
+              The proxy server hostname.
+          scheme:
+            type: str
+            choices:
+              - http
+              - https
+            description: >
+              The proxy connection scheme.
+          port:
+            type: int
+            description: >
+              The proxy server port number.
+          username:
+            type: str
+            description: >
+              The username for proxy authentication.
+          password:
+            type: str
+            description: >
+              The password for proxy authentication.
+      rhc_release:
+        type: raw
+        default: null
+        description: >
+          The release version to lock the system to, such as `8.6`.
+          Accepts `null`, a release string, a numeric release value,
+          or `{"state": "absent"}` to unset the release.
+      rhc_repositories:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          List of repositories to enable or disable on the system.
+        options:
+          name:
+            type: str
+            required: true
+            description: >
+              The repository name.
+          state:
+            type: str
+            default: enabled
+            choices:
+              - enabled
+              - disabled
+            description: >
+              Whether the repository should be `enabled` or
+              `disabled`.
+      rhc_server:
+        type: dict
+        default: {}
+        description: >
+          Registration server connection details for
+          subscription-manager.
+        options:
+          hostname:
+            type: str
+            description: >
+              The subscription server hostname.
+          port:
+            type: int
+            description: >
+              The subscription server port number.
+          prefix:
+            type: str
+            description: >
+              The API path prefix for the subscription server,
+              starting with `/`.
+          insecure:
+            type: bool
+            description: >
+              Whether to disable SSL certificate validation for the
+              subscription server.
+      rhc_state:
+        type: str
+        default: present
+        choices:
+          - present
+          - absent
+          - reconnect
+        description: >
+          Whether the system is connected to Red Hat (`present`),
+          disconnected (`absent`), or forcibly reconnected
+          (`reconnect`).

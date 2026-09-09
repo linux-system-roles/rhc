@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Assert rhc_baseurl is null or a string
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_baseurl is none)
+        or rhc_baseurl is string
+    fail_msg: >-
+      rhc_baseurl must be null or a string,
+      got {{ rhc_baseurl | type_debug }}
+  when: rhc_baseurl is defined
+
+- name: Assert rhc_organization is null or a string
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_organization is none)
+        or rhc_organization is string
+    fail_msg: >-
+      rhc_organization must be null or a string,
+      got {{ rhc_organization | type_debug }}
+  when: rhc_organization is defined
+
+- name: Assert rhc_release is null, string, number, or a dictionary
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_release is none)
+        or rhc_release is string
+        or ((rhc_release | type_debug) in ['int', 'float'])
+        or rhc_release is mapping
+    fail_msg: >-
+      rhc_release must be null, a string, a number, or a dictionary,
+      got {{ rhc_release | type_debug }}
+  when: rhc_release is defined
+
+- name: Assert rhc_insights.ansible_host is null, string, or a dictionary
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_insights.ansible_host is none)
+        or rhc_insights.ansible_host is string
+        or rhc_insights.ansible_host is mapping
+    fail_msg: >-
+      rhc_insights.ansible_host must be null, a string, or a dictionary,
+      got {{ rhc_insights.ansible_host | type_debug }}
+  when: rhc_insights.ansible_host is defined
+
+- name: Assert rhc_insights.display_name is null or a string
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_insights.display_name is none)
+        or rhc_insights.display_name is string
+    fail_msg: >-
+      rhc_insights.display_name must be null or a string,
+      got {{ rhc_insights.display_name | type_debug }}
+  when: rhc_insights.display_name is defined
+
+- name: Assert rhc_insights.tags is null or a dictionary
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_insights.tags is none)
+        or rhc_insights.tags is mapping
+    fail_msg: >-
+      rhc_insights.tags must be null or a dictionary,
+      got {{ rhc_insights.tags | type_debug }}
+  when: rhc_insights.tags is defined

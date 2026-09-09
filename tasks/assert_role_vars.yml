@@ -22,6 +22,36 @@
       got {{ rhc_organization | type_debug }}
   when: rhc_organization is defined
 
+- name: Assert rhc_auth does not specify both login and activation_keys
+  ansible.builtin.assert:
+    that:
+      - not ('login' in rhc_auth and 'activation_keys' in rhc_auth)
+    fail_msg: >-
+      rhc_auth must specify either login or activation_keys, not both
+  when: rhc_auth is mapping
+
+- name: Assert rhc_organization is set when using activation_keys
+  ansible.builtin.assert:
+    that:
+      - rhc_organization | default('', true) | length > 0
+    fail_msg: >-
+      rhc_organization is required when rhc_auth.activation_keys is set
+  when:
+    - rhc_state | d('present') in ['present', 'reconnect']
+    - "'activation_keys' in rhc_auth"
+    - "'keys' in rhc_auth.activation_keys | d({})"
+
+- name: Assert rhc_proxy has only state when state is absent
+  ansible.builtin.assert:
+    that:
+      - rhc_proxy.keys() | list | difference(['state']) | length == 0
+    fail_msg: >-
+      rhc_proxy must contain only state when state is absent,
+      got keys {{ rhc_proxy.keys() | list | join(', ') }}
+  when:
+    - rhc_proxy is mapping
+    - rhc_proxy.state | d('') == 'absent'
+
 - name: Assert rhc_release is null, string, number, or a dictionary
   ansible.builtin.assert:
     that:

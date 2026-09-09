@@ -141,7 +141,8 @@ argument_specs:
               - absent
             description: >
               When set to `absent`, all proxy configuration is reset
-              and the proxy is disabled.
+              and the proxy is disabled. No other proxy fields may be
+              specified when `state` is `absent`.
           hostname:
             type: str
             description: >

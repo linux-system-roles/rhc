@@ -13,6 +13,22 @@
           vars:
             rhc_state: absent
 
+        - name: Check subscription-manager registration status
+          ansible.builtin.command:
+            argv:
+              - subscription-manager
+              - identity
+          register: __rhc_identity_after_absent
+          changed_when: false
+          failed_when: false
+
+        - name: Assert system is disconnected from Red Hat
+          ansible.builtin.assert:
+            that:
+              - __rhc_identity_after_absent.rc != 0
+            fail_msg: >-
+              rhc_state absent should leave the system unregistered
+
         # ====================================================
         # Section 2: argument_specs validation (Ansible 2.11+)
         # ====================================================
@@ -285,6 +301,29 @@
               assert_role_vars should reject activation_keys when
               rhc_organization is not set
 
+        - name: Assert rejects empty activation_keys without rhc_organization
+          block:
+            - name: Run role with empty activation_keys and reconnect
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                rhc_state: reconnect
+                rhc_auth:
+                  activation_keys: {}
+          rescue:
+            - name: Mark empty activation_keys without organization rejected
+              ansible.builtin.set_fact:
+                __invalid_input_activation_keys_empty_no_org_failed: true
+
+        - name: Assert empty activation_keys without organization was rejected
+          ansible.builtin.assert:
+            that:
+              - >-
+                __invalid_input_activation_keys_empty_no_org_failed
+                | default(false)
+            fail_msg: >-
+              assert_role_vars should reject activation_keys when
+              rhc_organization is not set, even if keys is empty
+
         - name: Assert rejects rhc_proxy state absent with extra fields
           block:
             - name: Run role with rhc_proxy state absent and hostname
@@ -322,5 +361,6 @@
             __invalid_input_rhc_insights_ansible_host_int_failed:
             __invalid_input_rhc_auth_both_methods_failed:
             __invalid_input_activation_keys_no_org_failed:
+            __invalid_input_activation_keys_empty_no_org_failed:
             __invalid_input_rhc_proxy_absent_extra_failed:
           tags: tests::cleanup

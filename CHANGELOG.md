@@ -1,6 +1,33 @@
 Changelog
 =========
 
+[1.9.0] - 2026-09-17
+--------------------
+
+### New Features
+
+- feat: Argument spec implementation for rhc role (#310)
+
+### Bug Fixes
+
+- fix: Select RHSM modules by managed node python version (#299)
+- fix: Move subscription-manager module calls to shared include task files (#309)
+
+### Other Changes
+
+- ci: use commit hash for github action, add persist-credentials false [citest_skip] (#296)
+- ci: refactor build_docs so that pandoc runs in isolated read-only job [citest_skip] (#297)
+- ci: use exact match for systemroller instead of contains [citest_skip] (#298)
+- ci(build_docs): fix pandoc container syntax [citest_skip] (#301)
+- ci: [citest_skip] Bump actions/download-artifact from 7.0.0 to 8.0.1 (#302)
+- ci: [citest_skip] Bump codespell-project/actions-codespell from 2.1 to 2.2 (#303)
+- ci: [citest_skip] Bump myrotvorets/set-commit-status-action from 2774e1f040c82ed70a76b4b5cd53bb11ffaedd0a to c0f880c99d91381c6fdb97726f03feb8004409b4 (#304)
+- refactor: Relax collection constraints, gate vendored modules by python version, update ci versions [citest_skip] (#305)
+- ci: do not run ci tests by default, require citest comment or label [citest_skip] (#306)
+- ci: replace weekly_ci with periodic_ci, stagger schedules [citest_skip] (#307)
+- ci: update status when action triggered by issue comment (#308)
+- chore: Fix pep8 E501 line too long in rhsm_repository_python_36.py (#311)
+
 [1.8.0] - 2026-08-06
 --------------------
 

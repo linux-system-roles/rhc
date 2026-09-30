@@ -173,6 +173,78 @@ argument_specs:
           The release version to lock the system to, such as `8.6`.
           Accepts `null`, a release string, a numeric release value,
           or `{"state": "absent"}` to unset the release.
+      rhc_repo_ca_cert:
+        type: str
+        default: null
+        description: >
+          Path on the managed node to a CA certificate used for CDN
+          content (passed as `rhsm_repo_ca_cert` to
+          `community.general.redhat_subscription`). When set alone,
+          the file is assumed to already exist on the managed node.
+          When set together with `rhc_repo_ca_cert_src` or
+          `rhc_repo_ca_cert_content`, or when
+          `rhc_repo_ca_cert_fetch_from_satellite` is true, this is the
+          destination path for the certificate. If a source variable is
+          set or fetching is enabled and this is unset, defaults to
+          `/etc/pki/ca-trust/source/anchors/katello-server-ca.pem`.
+          To connect to a Satellite server, set at least one of
+          `rhc_repo_ca_cert`, `rhc_repo_ca_cert_src`, or
+          `rhc_repo_ca_cert_content` to provide its CA certificate, or
+          enable `rhc_repo_ca_cert_fetch_from_satellite` to download it.
+          The certificate file is usually found at
+          `/etc/pki/katello/certs/katello-server-ca.crt` on the Satellite
+          server machine, but the path may differ depending on your
+          installation.
+      rhc_repo_ca_cert_content:
+        type: str
+        default: null
+        description: >
+          PEM string content of the repository CA certificate to write
+          to `rhc_repo_ca_cert` on the managed node. Mutually exclusive
+          with `rhc_repo_ca_cert_src` and enabling
+          `rhc_repo_ca_cert_fetch_from_satellite`. When the file is changed,
+          `update-ca-trust` is run.
+          To connect to a Satellite server, set at least one of
+          `rhc_repo_ca_cert`, `rhc_repo_ca_cert_src`, or
+          `rhc_repo_ca_cert_content` to provide its CA certificate, or
+          enable `rhc_repo_ca_cert_fetch_from_satellite` to download it.
+          The certificate file is usually found at
+          `/etc/pki/katello/certs/katello-server-ca.crt` on the Satellite
+          server machine, but the path may differ depending on your
+          installation.
+      rhc_repo_ca_cert_fetch_from_satellite:
+        type: bool
+        default: false
+        description: >
+          Download the Satellite CA certificate on the managed node
+          from https://O(rhc_server.hostname) followed by
+          `/unattended/public/foreman_raw_ca`. Uses `rhc_server.port`
+          when set, otherwise the default HTTPS port, 443. Requires
+          `rhc_server.hostname` when enabled. Enabling this parameter is
+          mutually exclusive with `rhc_repo_ca_cert_src` and `rhc_repo_ca_cert_content`.
+          The destination is `rhc_repo_ca_cert`, or
+          `/etc/pki/ca-trust/source/anchors/katello-server-ca.pem`
+          when unset. When the file is changed, `update-ca-trust` is run.
+          Uses `ansible.builtin.get_url` with `validate_certs: false`.
+          This is potentially insecure and should only be used if the
+          connection to Satellite is trusted.
+      rhc_repo_ca_cert_src:
+        type: str
+        default: null
+        description: >
+          Path on the control node to a repository CA certificate file
+          to copy to `rhc_repo_ca_cert` on the managed node. Mutually
+          exclusive with `rhc_repo_ca_cert_content` and enabling
+          `rhc_repo_ca_cert_fetch_from_satellite`. When the file is
+          changed, `update-ca-trust` is run.
+          To connect to a Satellite server, set at least one of
+          `rhc_repo_ca_cert`, `rhc_repo_ca_cert_src`, or
+          `rhc_repo_ca_cert_content` to provide its CA certificate, or
+          enable `rhc_repo_ca_cert_fetch_from_satellite` to download it.
+          The certificate file is usually found at
+          `/etc/pki/katello/certs/katello-server-ca.crt` on the Satellite
+          server machine, but the path may differ depending on your
+          installation.
       rhc_repositories:
         type: list
         elements: dict

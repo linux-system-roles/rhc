@@ -1,0 +1,316 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Verify repository CA certificate sources and fetching
+  hosts: all
+  tasks:
+    - name: Create temporary certificate test directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: rhc-repo-ca-cert-
+      register: __rhc_ca_test_dir
+
+    - name: Test certificate handling in isolation
+      vars:
+        __rhc_repo_ca_cert_default: "{{ __rhc_ca_test_dir.path }}/default.pem"
+        __rhc_rhsm_ca_cert_path: "{{ __rhc_ca_test_dir.path }}/rhsm/ca/rhsm.pem"
+      block:
+        - name: Check unset certificate inputs
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+            tasks_from: repo_ca_cert.yml
+
+        - name: Verify unset certificate inputs do not select a path
+          ansible.builtin.assert:
+            that:
+              - __rhc_repo_ca_cert_path | length == 0
+
+        - name: Check content with an undefined destination
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+            tasks_from: repo_ca_cert.yml
+          vars:
+            rhc_repo_ca_cert_content: "Inline CA certificate fixture\n"
+
+        - name: Verify content uses the default destination
+          ansible.builtin.assert:
+            that:
+              - __rhc_repo_ca_cert_path == __rhc_repo_ca_cert_default
+
+        - name: Check unset certificate inputs after a configured invocation
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+            tasks_from: repo_ca_cert.yml
+
+        - name: Verify the previous certificate path was cleared
+          ansible.builtin.assert:
+            that:
+              - __rhc_repo_ca_cert_path | length == 0
+
+        - name: Create existing repository CA certificate for check mode
+          ansible.builtin.copy:
+            content: "Existing CA certificate fixture\n"
+            dest: "{{ __rhc_ca_test_dir.path }}/check-mode.pem"
+            mode: "0644"
+
+        - name: Remove RHSM certificate for check mode
+          ansible.builtin.file:
+            path: "{{ __rhc_rhsm_ca_cert_path }}"
+            state: absent
+
+        - name: Predict missing RHSM certificate from existing path
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+            tasks_from: repo_ca_cert.yml
+            apply:
+              check_mode: true
+          vars:
+            rhc_repo_ca_cert: "{{ __rhc_ca_test_dir.path }}/check-mode.pem"
+
+        - name: Check RHSM certificate is still missing
+          ansible.builtin.stat:
+            path: "{{ __rhc_rhsm_ca_cert_path }}"
+          register: __rhc_ca_check_mode_rhsm_stat
+
+        - name: Verify missing RHSM certificate is predicted
+          ansible.builtin.assert:
+            that:
+              - __rhc_rhsm_ca_cert_copy_result is changed
+              - not __rhc_ca_check_mode_rhsm_stat.stat.exists
+
+        - name: Create stale RHSM certificate for check mode
+          ansible.builtin.copy:
+            content: "Stale RHSM certificate\n"
+            dest: "{{ __rhc_rhsm_ca_cert_path }}"
+            mode: "0644"
+
+        - name: Predict stale RHSM certificate repair
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+            tasks_from: repo_ca_cert.yml
+            apply:
+              check_mode: true
+          vars:
+            rhc_repo_ca_cert: "{{ __rhc_ca_test_dir.path }}/check-mode.pem"
+
+        - name: Read RHSM certificate after check mode
+          ansible.builtin.slurp:
+            src: "{{ __rhc_rhsm_ca_cert_path }}"
+          register: __rhc_ca_check_mode_rhsm
+
+        - name: Verify stale RHSM certificate is predicted without changes
+          ansible.builtin.assert:
+            that:
+              - __rhc_rhsm_ca_cert_copy_result is changed
+              - __rhc_ca_check_mode_rhsm.content | b64decode == "Stale RHSM certificate\n"
+
+        - name: Create mock Satellite endpoint
+          ansible.builtin.file:
+            path: "{{ __rhc_ca_test_dir.path }}/unattended/public"
+            state: directory
+            mode: "0755"
+
+        - name: Create mock Satellite CA certificate
+          ansible.builtin.copy:
+            content: "Satellite CA certificate fixture\n"
+            dest: "{{ __rhc_ca_test_dir.path }}/unattended/public/foreman_raw_ca"
+            mode: "0644"
+
+        - name: Generate a self-signed certificate for the mock Satellite server
+          ansible.builtin.command:
+            argv:
+              - openssl
+              - req
+              - -x509
+              - -newkey
+              - rsa:2048
+              - -nodes
+              - -keyout
+              - "{{ __rhc_ca_test_dir.path }}/server.key"
+              - -out
+              - "{{ __rhc_ca_test_dir.path }}/server.crt"
+              - -days
+              - "1"
+              - -subj
+              - /CN=localhost
+          changed_when: true
+
+        - name: Copy mock Satellite HTTPS server
+          ansible.builtin.copy:
+            src: files/repo_ca_cert_server.py
+            dest: "{{ __rhc_ca_test_dir.path }}/server.py"
+            mode: "0644"
+
+        - name: Start mock Satellite HTTPS server
+          ansible.builtin.command:
+            argv:
+              - "{{ ansible_facts.python.executable }}"
+              - "{{ __rhc_ca_test_dir.path }}/server.py"
+              - "{{ __rhc_ca_test_dir.path }}"
+          async: 300
+          poll: 0
+          changed_when: true
+          register: __rhc_ca_test_server_job
+
+        - name: Wait for mock Satellite HTTPS server
+          ansible.builtin.stat:
+            path: "{{ __rhc_ca_test_dir.path }}/port"
+          register: __rhc_ca_test_port_file
+          until: __rhc_ca_test_port_file.stat.exists
+          retries: 10
+          delay: 1
+
+        - name: Read mock Satellite HTTPS port
+          ansible.builtin.slurp:
+            src: "{{ __rhc_ca_test_dir.path }}/port"
+          register: __rhc_ca_test_port
+
+        - name: Create controller CA certificate fixture
+          ansible.builtin.tempfile:
+            state: file
+          delegate_to: localhost
+          become: false
+          register: __rhc_ca_test_src
+
+        - name: Write controller CA certificate fixture
+          ansible.builtin.copy:
+            content: "Controller CA certificate fixture\n"
+            dest: "{{ __rhc_ca_test_src.path }}"
+            mode: "0644"
+          delegate_to: localhost
+          become: false
+
+        - name: Verify fetching rejects other certificate sources
+          ansible.builtin.include_tasks: tasks/check_repo_ca_cert_invalid.yml
+          loop:
+            - src: "{{ __rhc_ca_test_src.path }}"
+            - content: "Inline CA certificate fixture\n"
+          loop_control:
+            loop_var: __rhc_ca_invalid_case
+
+        # Self-signed HTTPS verifies fetching with validate_certs: false.
+        # The temporary destinations keep fixtures out of the system trust store.
+        - name: Verify certificate source scenarios
+          ansible.builtin.include_tasks: tasks/check_repo_ca_cert.yml
+          loop:
+            - name: Fetch disabled by default
+              fetch: false
+              expected: null
+            - name: Fetch with default destination
+              fetch: true
+              server:
+                hostname: 127.0.0.1
+                port: "{{ __rhc_ca_test_port.content | b64decode | int }}"
+              expected: "Satellite CA certificate fixture\n"
+            - name: Fetch with custom destination
+              fetch: true
+              server:
+                hostname: 127.0.0.1
+                port: "{{ __rhc_ca_test_port.content | b64decode | int }}"
+              dest: "{{ __rhc_ca_test_dir.path }}/custom.pem"
+              expected: "Satellite CA certificate fixture\n"
+            - name: Controller source with fetching disabled
+              fetch: false
+              src: "{{ __rhc_ca_test_src.path }}"
+              expected: "Controller CA certificate fixture\n"
+            - name: Controller source with a new destination directory
+              fetch: false
+              src: "{{ __rhc_ca_test_src.path }}"
+              dest: "{{ __rhc_ca_test_dir.path }}/nested/repo-ca.pem"
+              expected: "Controller CA certificate fixture\n"
+            - name: Pre-existing certificate path
+              fetch: false
+              dest: "{{ __rhc_ca_test_dir.path }}/existing.pem"
+              preexisting: true
+              expected: "Pre-existing CA certificate fixture\n"
+            - name: Inline content with fetching disabled
+              fetch: false
+              content: "Inline CA certificate fixture\n"
+              expected: "Inline CA certificate fixture\n"
+          loop_control:
+            loop_var: __rhc_ca_test_case
+            label: "{{ __rhc_ca_test_case.name }}"
+
+        - name: Download Satellite CA certificate before rotation
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+            tasks_from: repo_ca_cert.yml
+          vars:
+            rhc_repo_ca_cert_fetch_from_satellite: true
+            rhc_server:
+              hostname: 127.0.0.1
+              port: "{{ __rhc_ca_test_port.content | b64decode | int }}"
+
+        - name: Rotate mock Satellite CA certificate
+          ansible.builtin.copy:
+            content: "Rotated Satellite CA certificate fixture\n"
+            dest: "{{ __rhc_ca_test_dir.path }}/unattended/public/foreman_raw_ca"
+            mode: "0644"
+
+        - name: Download rotated Satellite CA certificate
+          ansible.builtin.include_role:
+            name: linux-system-roles.rhc
+            tasks_from: repo_ca_cert.yml
+          vars:
+            rhc_repo_ca_cert_fetch_from_satellite: true
+            rhc_server:
+              hostname: 127.0.0.1
+              port: "{{ __rhc_ca_test_port.content | b64decode | int }}"
+
+        - name: Read rotated repository and RHSM certificates
+          ansible.builtin.slurp:
+            src: "{{ item }}"
+          loop:
+            - "{{ __rhc_repo_ca_cert_default }}"
+            - "{{ __rhc_rhsm_ca_cert_path }}"
+          register: __rhc_ca_rotated_certs
+
+        - name: Verify rotated Satellite certificate was deployed
+          ansible.builtin.assert:
+            that:
+              - __rhc_repo_ca_cert_fetch_result is changed
+              - __rhc_rhsm_ca_cert_copy_result is changed
+              - item.content | b64decode == "Rotated Satellite CA certificate fixture\n"
+          loop: "{{ __rhc_ca_rotated_certs.results }}"
+          loop_control:
+            label: "{{ item.source }}"
+
+      always:
+        - name: Signal mock Satellite HTTPS server to stop
+          ansible.builtin.copy:
+            content: "stop\n"
+            dest: "{{ __rhc_ca_test_dir.path }}/stop"
+            mode: "0644"
+          when: __rhc_ca_test_server_job.ansible_job_id is defined
+          tags: tests::cleanup
+
+        - name: Wait for mock Satellite HTTPS server to stop
+          ansible.builtin.async_status:
+            jid: "{{ __rhc_ca_test_server_job.ansible_job_id }}"
+          register: __rhc_ca_test_server_status
+          until: __rhc_ca_test_server_status.finished
+          retries: 10
+          delay: 1
+          when: __rhc_ca_test_server_job.ansible_job_id is defined
+          tags: tests::cleanup
+
+        - name: Remove mock Satellite HTTPS server job
+          ansible.builtin.async_status:
+            jid: "{{ __rhc_ca_test_server_job.ansible_job_id }}"
+            mode: cleanup
+          when: __rhc_ca_test_server_job.ansible_job_id is defined
+          tags: tests::cleanup
+
+        - name: Remove controller certificate fixture
+          ansible.builtin.file:
+            path: "{{ __rhc_ca_test_src.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          when: __rhc_ca_test_src is defined
+          tags: tests::cleanup
+
+        - name: Remove temporary certificate test directory
+          ansible.builtin.file:
+            path: "{{ __rhc_ca_test_dir.path }}"
+            state: absent
+          tags: tests::cleanup

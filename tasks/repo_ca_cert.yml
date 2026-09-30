@@ -1,0 +1,122 @@
+# SPDX-License-Identifier: MIT
+---
+# Deploy and/or resolve the repository CA certificate path used as
+# rhsm_repo_ca_cert for community.general.redhat_subscription.
+#
+# - rhc_repo_ca_cert alone: file already exists on the managed node
+# - rhc_repo_ca_cert_src: copy from control node to managed node
+# - rhc_repo_ca_cert_content: write string content to managed node
+# - rhc_repo_ca_cert_fetch_from_satellite: download from Satellite
+# - src, content, and fetching are mutually exclusive (assert_role_vars)
+# - if src, content, or fetch is set without rhc_repo_ca_cert, use
+#   __rhc_repo_ca_cert_default as the destination
+# - when the cert file is changed, run update-ca-trust
+
+- name: Reset repository CA certificate path
+  ansible.builtin.set_fact:
+    __rhc_repo_ca_cert_path: ""
+
+- name: Deploy repository CA certificate
+  vars:
+    has_cert_path: >-
+      {{ rhc_repo_ca_cert is defined and rhc_repo_ca_cert is not none
+         and rhc_repo_ca_cert | length > 0 }}
+    has_cert_src: >-
+      {{ rhc_repo_ca_cert_src is defined and rhc_repo_ca_cert_src is not none
+         and rhc_repo_ca_cert_src | length > 0 }}
+    has_cert_content: >-
+      {{ rhc_repo_ca_cert_content is defined
+         and rhc_repo_ca_cert_content is not none
+         and rhc_repo_ca_cert_content | length > 0 }}
+    fetch_cert_from_satellite: >-
+      {{ rhc_repo_ca_cert_fetch_from_satellite | default(false) | bool }}
+  when: has_cert_path or has_cert_src or has_cert_content or fetch_cert_from_satellite
+  block:
+    - name: Set repository CA certificate path
+      ansible.builtin.set_fact:
+        __rhc_repo_ca_cert_path: "{{ rhc_repo_ca_cert
+          if has_cert_path else __rhc_repo_ca_cert_default }}"
+
+    - name: Check repository CA certificate directory
+      ansible.builtin.stat:
+        path: "{{ __rhc_repo_ca_cert_path | dirname }}"
+        follow: true
+      register: __rhc_repo_ca_cert_dir_stat
+
+    - name: Create repository CA certificate directory if missing
+      ansible.builtin.file:
+        path: "{{ __rhc_repo_ca_cert_path | dirname }}"
+        state: directory
+        mode: "0755"
+      when: not (__rhc_repo_ca_cert_dir_stat.stat.isdir | default(false))
+
+    - name: Copy repository CA certificate from control node
+      ansible.builtin.copy:
+        src: "{{ rhc_repo_ca_cert_src }}"
+        dest: "{{ __rhc_repo_ca_cert_path }}"
+        mode: "0644"
+      when: has_cert_src
+      register: __rhc_repo_ca_cert_src_result
+
+    - name: Write repository CA certificate content
+      ansible.builtin.copy:
+        content: "{{ rhc_repo_ca_cert_content }}"
+        dest: "{{ __rhc_repo_ca_cert_path }}"
+        mode: "0644"
+      when: has_cert_content
+      register: __rhc_repo_ca_cert_content_result
+
+    - name: Fetch repository CA certificate from Satellite
+      ansible.builtin.get_url:
+        url: "https://{{ rhc_server['hostname'] }}{{
+          ':' ~ rhc_server['port'] if rhc_server['port'] is defined
+          and rhc_server['port'] is not none else ''
+          }}{{ __rhc_repo_satellite_ca_cert_uri }}"
+        dest: "{{ __rhc_repo_ca_cert_path }}"
+        mode: "0644"
+        force: true
+        validate_certs: false
+      when: fetch_cert_from_satellite
+      register: __rhc_repo_ca_cert_fetch_result
+
+    - name: Check RHSM CA certificate directory
+      ansible.builtin.stat:
+        path: "{{ __rhc_rhsm_ca_cert_path | dirname }}"
+        follow: true
+      register: __rhc_rhsm_ca_cert_dir_stat
+
+    - name: Create RHSM CA certificate directory if missing
+      ansible.builtin.file:
+        path: "{{ __rhc_rhsm_ca_cert_path | dirname }}"
+        state: directory
+        mode: "0755"
+      when: not (__rhc_rhsm_ca_cert_dir_stat.stat.isdir | default(false))
+
+    - name: Copy RHSM CA certificate
+      ansible.builtin.copy:
+        src: "{{ __rhc_repo_ca_cert_path }}"
+        dest: "{{ __rhc_rhsm_ca_cert_path }}"
+        mode: "0644"
+        remote_src: true
+      # A deployed source is only predicted in check mode; an existing
+      # certificate path can still be checked against the RHSM copy.
+      when: >-
+        not ansible_check_mode
+        or (has_cert_path and not (has_cert_src or has_cert_content
+                                    or fetch_cert_from_satellite))
+      register: __rhc_rhsm_ca_cert_copy_result
+
+    - name: Update CA trust
+      ansible.builtin.command:
+        argv:
+          - update-ca-trust
+      when: >-
+        (__rhc_repo_ca_cert_src_result is defined
+         and __rhc_repo_ca_cert_src_result is changed)
+        or (__rhc_repo_ca_cert_content_result is defined
+            and __rhc_repo_ca_cert_content_result is changed)
+        or (__rhc_repo_ca_cert_fetch_result is defined
+            and __rhc_repo_ca_cert_fetch_result is changed)
+        or (__rhc_rhsm_ca_cert_copy_result is defined
+            and __rhc_rhsm_ca_cert_copy_result is changed)
+      changed_when: true

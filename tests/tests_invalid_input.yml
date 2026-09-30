@@ -346,6 +346,79 @@
               assert_role_vars should reject rhc_proxy when state is absent
               and other proxy fields are specified
 
+        - name: Assert rejects rhc_repo_ca_cert_src and rhc_repo_ca_cert_content together
+          block:
+            - name: Run role with both rhc_repo_ca_cert_src and content
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                rhc_state: absent
+                rhc_repo_ca_cert_src: /tmp/ca.pem
+                rhc_repo_ca_cert_content: |
+                  -----BEGIN CERTIFICATE-----
+                  nothing
+                  -----END CERTIFICATE-----
+          rescue:
+            - name: Mark conflicting repo CA cert sources rejected
+              ansible.builtin.set_fact:
+                __invalid_input_repo_ca_cert_both_failed: true
+
+        - name: Assert conflicting repo CA cert sources were rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_repo_ca_cert_both_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject when both
+              rhc_repo_ca_cert_src and rhc_repo_ca_cert_content are set
+
+        - name: Assert rejects rhc_repo_ca_cert as an integer
+          block:
+            - name: Run role with rhc_repo_ca_cert as an integer
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                rhc_state: absent
+                rhc_repo_ca_cert: 123
+          rescue:
+            - name: Mark rhc_repo_ca_cert integer rejected
+              ansible.builtin.set_fact:
+                __invalid_input_rhc_repo_ca_cert_int_failed: true
+
+        - name: Assert rhc_repo_ca_cert as integer was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_rhc_repo_ca_cert_int_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject rhc_repo_ca_cert when given
+              an integer value
+
+        - name: Verify fetching rejects other certificate sources
+          ansible.builtin.include_tasks: tasks/check_repo_ca_cert_invalid.yml
+          loop:
+            - src: /tmp/ca.pem
+            - content: "Inline CA certificate fixture\n"
+          loop_control:
+            loop_var: __rhc_ca_invalid_case
+
+        - name: Assert rejects fetching the Satellite CA certificate without a Satellite hostname
+          block:
+            - name: Run role with fetching enabled and no Satellite hostname
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                rhc_state: absent
+                rhc_server: {}
+                rhc_repo_ca_cert_fetch_from_satellite: true
+          rescue:
+            - name: Mark fetching without a Satellite hostname rejected
+              ansible.builtin.set_fact:
+                __invalid_input_repo_ca_cert_fetch_no_hostname_failed: true
+
+        - name: Assert fetching without a Satellite hostname was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_repo_ca_cert_fetch_no_hostname_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject fetching the Satellite
+              CA certificate without a Satellite hostname
+
       always:
         - name: Clear test facts
           ansible.builtin.set_fact:
@@ -363,4 +436,7 @@
             __invalid_input_activation_keys_no_org_failed:
             __invalid_input_activation_keys_empty_no_org_failed:
             __invalid_input_rhc_proxy_absent_extra_failed:
+            __invalid_input_repo_ca_cert_both_failed:
+            __invalid_input_rhc_repo_ca_cert_int_failed:
+            __invalid_input_repo_ca_cert_fetch_no_hostname_failed:
           tags: tests::cleanup

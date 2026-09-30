@@ -179,11 +179,14 @@
           include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
+          tags: tests::cleanup
 
         - name: Unregister (noop)
           include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             rhc_state: absent
+          tags: tests::cleanup
 
         - name: Clean up Candlepin container
           include_tasks: tasks/teardown_candlepin.yml
+          tags: tests::cleanup

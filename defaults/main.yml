@@ -13,6 +13,7 @@ rhc_insights:
 rhc_organization: null
 rhc_proxy: {}
 rhc_release: null
+rhc_repo_ca_cert_fetch_from_satellite: false
 rhc_repositories: []
 rhc_server: {}
 rhc_state: "present"

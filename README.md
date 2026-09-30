@@ -116,6 +116,63 @@ rhc_server:
 The base URL for receiving content from the subscription server.
 
 ```yaml
+    rhc_repo_ca_cert_fetch_from_satellite: false
+```
+
+CA certificate used for CDN content (maps to the `rhsm_repo_ca_cert`
+parameter of `community.general.redhat_subscription`). The three path and
+content variables are unset by default.
+
+To connect to a Satellite server, set at least one of `rhc_repo_ca_cert`,
+`rhc_repo_ca_cert_src`, or `rhc_repo_ca_cert_content` to provide its CA
+certificate, or set `rhc_repo_ca_cert_fetch_from_satellite: true` to
+download it from Satellite. This certificate file is usually found at
+`/etc/pki/katello/certs/katello-server-ca.crt` on the Satellite server
+machine, but the path may differ depending on your installation.
+
+* `rhc_repo_ca_cert` is the path on the managed node. When set alone, the
+  file is assumed to already exist on the managed node.
+* `rhc_repo_ca_cert_src` is a path on the control node; the role copies
+  that file to `rhc_repo_ca_cert` on the managed node.
+* `rhc_repo_ca_cert_content` is the PEM string content to write to
+  `rhc_repo_ca_cert` on the managed node.
+
+For example, in a registration playbook, provide the certificate inline:
+
+```yaml
+- hosts: all
+  vars:
+    rhc_repo_ca_cert_content: |
+      -----BEGIN CERTIFICATE-----
+      <base64-encoded certificate content>
+      -----END CERTIFICATE-----
+    # Optional; omit to use the default destination.
+    rhc_repo_ca_cert: /etc/pki/ca-trust/source/anchors/satellite-ca.pem
+  roles:
+    - linux-system-roles.rhc
+```
+
+`rhc_repo_ca_cert_src`, `rhc_repo_ca_cert_content`, and enabling
+`rhc_repo_ca_cert_fetch_from_satellite` are mutually exclusive. The role
+rejects combining any of these certificate sources. If a source is set
+or fetching is enabled and `rhc_repo_ca_cert` is not set, the destination
+defaults to
+`/etc/pki/ca-trust/source/anchors/katello-server-ca.pem`. When the
+certificate file is changed by the role, `update-ca-trust` is run.
+
+`rhc_repo_ca_cert_fetch_from_satellite` is a boolean that defaults to
+`false`. When enabled, the role uses `ansible.builtin.get_url` to
+download the certificate from
+`https://{{ rhc_server["hostname"] }}/unattended/public/foreman_raw_ca`
+on the managed node. If `rhc_server.port` is set, it is included after
+the hostname; otherwise HTTPS uses its default port, 443.
+`rhc_server.hostname` must be set when downloading the certificate.
+
+**Security warning:** This download uses `validate_certs: false`, so the
+Satellite server's TLS certificate is not validated. This is potentially
+insecure and should only be used if the connection to Satellite is trusted.
+
+```yaml
     rhc_repositories: []
 ```
 
@@ -295,6 +352,41 @@ username & password:
           ....
   roles:
     - linux-system-roles.rhc
+```
+
+Connect systems to a Satellite server using its CA certificate:
+
+This example assumes the inventory defines `satellite-server` and
+`satellite-client`. Set `satellite_hostname` to the Satellite server hostname
+that matches its TLS certificate, and provide `satellite_username` and
+`satellite_password` through Ansible Vault. Adjust the certificate path if
+needed for your installation.
+
+```yaml
+- name: Register systems with Satellite
+  hosts: satellite-client
+  become: true
+  vars:
+    satellite_hostname: satellite.example.com
+  tasks:
+    - name: Register with Satellite
+      ansible.builtin.include_role:
+        name: linux-system-roles.rhc
+      vars:
+        rhc_repo_ca_cert_fetch_from_satellite: true
+        rhc_auth:
+          login:
+            username: "{{ satellite_username }}"
+            password: "{{ satellite_password }}"
+        rhc_insights:
+          state: absent
+        rhc_organization: your-organization
+        rhc_server:
+          hostname: "{{ satellite_hostname }}"
+          port: 443
+          prefix: /rhsm
+          insecure: false
+        rhc_baseurl: "https://{{ satellite_hostname }}/pulp/content"
 ```
 
 Ensure that certain RHEL 9 repositories are enabled, and another one is not:

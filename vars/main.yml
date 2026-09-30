@@ -36,6 +36,19 @@ __rhc_yggdrasil_systemd_service: "{{ 'yggdrasil'
 
 __rhc_write_log_file: false
 
+# Default path for the repository CA certificate when
+# rhc_repo_ca_cert_src, rhc_repo_ca_cert_content, or
+# rhc_repo_ca_cert_fetch_from_satellite is set without
+# an explicit rhc_repo_ca_cert destination
+__rhc_repo_ca_cert_default: /etc/pki/ca-trust/source/anchors/katello-server-ca.pem
+
+# URI for downloading the Satellite CA certificate, relative to
+# https://{{ rhc_server["hostname"] }} (with optional rhc_server.port)
+__rhc_repo_satellite_ca_cert_uri: /unattended/public/foreman_raw_ca
+
+# Path for Satellite certificate
+__rhc_rhsm_ca_cert_path: /etc/rhsm/ca/katello-server-ca.pem
+
 # BEGIN - DO NOT EDIT THIS BLOCK - rh distros variables
 # Ansible distribution identifiers that the role treats like RHEL
 __rhc_rh_distros:

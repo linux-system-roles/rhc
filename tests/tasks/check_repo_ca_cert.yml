@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Remove previous certificate fixtures
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ __rhc_repo_ca_cert_default }}"
+    - "{{ __rhc_ca_test_dir.path }}/custom.pem"
+    - "{{ __rhc_rhsm_ca_cert_path }}"
+
+- name: Validate certificate parameters
+  ansible.builtin.include_role:
+    name: linux-system-roles.rhc
+    tasks_from: assert_role_vars.yml
+  vars:
+    rhc_repo_ca_cert_fetch_from_satellite: "{{ __rhc_ca_test_case.fetch }}"
+    rhc_baseurl: null
+    rhc_server: "{{ __rhc_ca_test_case.server | default({}) }}"
+    rhc_repo_ca_cert: "{{ __rhc_ca_test_case.dest | default(none) }}"
+    rhc_repo_ca_cert_src: "{{ __rhc_ca_test_case.src | default(none) }}"
+    rhc_repo_ca_cert_content: "{{ __rhc_ca_test_case.content | default(none) }}"
+
+- name: Deploy repository CA certificate
+  ansible.builtin.include_role:
+    name: linux-system-roles.rhc
+    tasks_from: repo_ca_cert.yml
+  vars:
+    rhc_repo_ca_cert_fetch_from_satellite: "{{ __rhc_ca_test_case.fetch }}"
+    rhc_baseurl: null
+    rhc_server: "{{ __rhc_ca_test_case.server | default({}) }}"
+    rhc_repo_ca_cert: "{{ __rhc_ca_test_case.dest | default(none) }}"
+    rhc_repo_ca_cert_src: "{{ __rhc_ca_test_case.src | default(none) }}"
+    rhc_repo_ca_cert_content: "{{ __rhc_ca_test_case.content | default(none) }}"
+
+- name: Check certificate destination
+  ansible.builtin.stat:
+    path: "{{ __rhc_ca_test_case.dest | default(__rhc_repo_ca_cert_default) }}"
+  register: __rhc_ca_test_stat
+
+- name: Verify certificate is only deployed when configured
+  ansible.builtin.assert:
+    that:
+      - __rhc_ca_test_stat.stat.exists == (__rhc_ca_test_case.expected is not none)
+
+- name: Verify deployed certificates
+  when: __rhc_ca_test_case.expected is not none
+  block:
+    - name: Read repository and RHSM certificates
+      ansible.builtin.slurp:
+        src: "{{ item }}"
+      loop:
+        - "{{ __rhc_ca_test_case.dest | default(__rhc_repo_ca_cert_default) }}"
+        - "{{ __rhc_rhsm_ca_cert_path }}"
+      register: __rhc_ca_test_certs
+
+    - name: Verify repository and RHSM certificate contents
+      ansible.builtin.assert:
+        that:
+          - item.content | b64decode == __rhc_ca_test_case.expected
+      loop: "{{ __rhc_ca_test_certs.results }}"
+      loop_control:
+        label: "{{ item.source | default(item.item) }}"
+
+- name: Repeat repository CA certificate deployment
+  ansible.builtin.include_role:
+    name: linux-system-roles.rhc
+    tasks_from: repo_ca_cert.yml
+  vars:
+    rhc_repo_ca_cert_fetch_from_satellite: "{{ __rhc_ca_test_case.fetch }}"
+    rhc_baseurl: null
+    rhc_server: "{{ __rhc_ca_test_case.server | default({}) }}"
+    rhc_repo_ca_cert: "{{ __rhc_ca_test_case.dest | default(none) }}"
+    rhc_repo_ca_cert_src: "{{ __rhc_ca_test_case.src | default(none) }}"
+    rhc_repo_ca_cert_content: "{{ __rhc_ca_test_case.content | default(none) }}"
+
+- name: Verify certificate deployment is idempotent
+  ansible.builtin.assert:
+    that:
+      - not __rhc_repo_ca_cert_src_result.changed
+      - not __rhc_repo_ca_cert_content_result.changed
+      - not __rhc_repo_ca_cert_fetch_result.changed

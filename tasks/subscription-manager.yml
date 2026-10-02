@@ -21,6 +21,9 @@
   changed_when: false
   failed_when: __rhc_subman_identity.rc not in [0, 1]
 
+- name: Ensure repository CA certificate
+  include_tasks: repo_ca_cert.yml
+
 # include_redhat_subscription.yml selects the vendored (python < 3.7) or
 # community.general.redhat_subscription module.
 - name: Call subscription-manager
@@ -91,6 +94,10 @@
       rhsm_baseurl: "{{ rhc_baseurl
         if (not rhc_baseurl is none
             and rhc_baseurl != omit)
+        else omit }}"
+      rhsm_repo_ca_cert: "{{ __rhc_repo_ca_cert_path
+        if (__rhc_repo_ca_cert_path is defined
+            and __rhc_repo_ca_cert_path | length > 0)
         else omit }}"
 
 - name: Configure subscribed system

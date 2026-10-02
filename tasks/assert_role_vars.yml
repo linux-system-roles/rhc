@@ -97,3 +97,67 @@
       rhc_insights.tags must be null or a dictionary,
       got {{ rhc_insights.tags | type_debug }}
   when: rhc_insights.tags is defined
+
+- name: Assert rhc_repo_ca_cert is null or a string
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_repo_ca_cert is none)
+        or rhc_repo_ca_cert is string
+    fail_msg: >-
+      rhc_repo_ca_cert must be null or a string,
+      got {{ rhc_repo_ca_cert | type_debug }}
+  when: rhc_repo_ca_cert is defined
+
+- name: Assert rhc_repo_ca_cert_src is null or a string
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_repo_ca_cert_src is none)
+        or rhc_repo_ca_cert_src is string
+    fail_msg: >-
+      rhc_repo_ca_cert_src must be null or a string,
+      got {{ rhc_repo_ca_cert_src | type_debug }}
+  when: rhc_repo_ca_cert_src is defined
+
+- name: Assert rhc_repo_ca_cert_content is null or a string
+  ansible.builtin.assert:
+    that:
+      - >-
+        (rhc_repo_ca_cert_content is none)
+        or rhc_repo_ca_cert_content is string
+    fail_msg: >-
+      rhc_repo_ca_cert_content must be null or a string,
+      got {{ rhc_repo_ca_cert_content | type_debug }}
+  when: rhc_repo_ca_cert_content is defined
+
+- name: Assert rhc_repo_ca_cert_src and rhc_repo_ca_cert_content are not both set
+  ansible.builtin.assert:
+    that:
+      - >-
+        not (
+          (rhc_repo_ca_cert_src | default('', true) | length > 0)
+          and (rhc_repo_ca_cert_content | default('', true) | length > 0)
+        )
+    fail_msg: >-
+      rhc_repo_ca_cert_src and rhc_repo_ca_cert_content cannot both
+      be specified
+
+- name: Assert fetching the Satellite CA certificate is exclusive with other sources
+  ansible.builtin.assert:
+    that:
+      - rhc_repo_ca_cert_src | default('', true) | length == 0
+      - rhc_repo_ca_cert_content | default('', true) | length == 0
+    fail_msg: >-
+      rhc_repo_ca_cert_fetch_from_satellite cannot be combined with
+      rhc_repo_ca_cert_src or rhc_repo_ca_cert_content
+  when: rhc_repo_ca_cert_fetch_from_satellite | default(false) | bool
+
+- name: Assert Satellite hostname is set when fetching the CA certificate
+  ansible.builtin.assert:
+    that:
+      - rhc_server['hostname'] | default('', true) | length > 0
+    fail_msg: >-
+      rhc_server.hostname is required when rhc_repo_ca_cert_fetch_from_satellite
+      is true
+  when: rhc_repo_ca_cert_fetch_from_satellite | default(false) | bool

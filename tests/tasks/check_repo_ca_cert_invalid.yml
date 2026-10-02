@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Verify conflicting certificate sources are rejected
+  block:
+    - name: Validate fetching combined with another source
+      ansible.builtin.include_role:
+        name: linux-system-roles.rhc
+        tasks_from: assert_role_vars.yml
+      vars:
+        rhc_state: absent
+        rhc_server:
+          hostname: satellite.example.com
+        rhc_repo_ca_cert_fetch_from_satellite: true
+        rhc_repo_ca_cert_src: "{{ __rhc_ca_invalid_case.src | default(none) }}"
+        rhc_repo_ca_cert_content: "{{ __rhc_ca_invalid_case.content | default(none) }}"
+
+    - name: Fail if conflicting sources were accepted
+      ansible.builtin.fail:
+        msg: Fetching combined with another certificate source was accepted
+
+  rescue:
+    - name: Verify the certificate source conflict error
+      ansible.builtin.assert:
+        that:
+          - >-
+            'rhc_repo_ca_cert_fetch_from_satellite cannot be combined with'
+            in ansible_failed_result.msg

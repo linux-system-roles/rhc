@@ -233,7 +233,65 @@ the SSL certificate of the server</li>
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_baseurl</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;&quot;</span></span></code></pre></div>
 <p>The base URL for receiving content from the subscription server.</p>
 <div class="sourceCode" id="cb10"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_repositories</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span></code></pre></div>
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_repo_ca_cert_fetch_from_satellite</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span></code></pre></div>
+<p>CA certificate used for CDN content (maps to the
+<code>rhsm_repo_ca_cert</code> parameter of
+<code>community.general.redhat_subscription</code>). The three path and
+content variables are unset by default.</p>
+<p>To connect to a Satellite server, set at least one of
+<code>rhc_repo_ca_cert</code>, <code>rhc_repo_ca_cert_src</code>, or
+<code>rhc_repo_ca_cert_content</code> to provide its CA certificate, or
+set <code>rhc_repo_ca_cert_fetch_from_satellite: true</code> to download
+it from Satellite. This certificate file is usually found at
+<code>/etc/pki/katello/certs/katello-server-ca.crt</code> on the
+Satellite server machine, but the path may differ depending on your
+installation.</p>
+<ul>
+<li><code>rhc_repo_ca_cert</code> is the path on the managed node. When
+set alone, the file is assumed to already exist on the managed
+node.</li>
+<li><code>rhc_repo_ca_cert_src</code> is a path on the control node; the
+role copies that file to <code>rhc_repo_ca_cert</code> on the managed
+node.</li>
+<li><code>rhc_repo_ca_cert_content</code> is the PEM string content to
+write to <code>rhc_repo_ca_cert</code> on the managed node.</li>
+</ul>
+<p>For example, in a registration playbook, provide the certificate
+inline:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">    rhc_repo_ca_cert_content</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>      -----BEGIN CERTIFICATE-----</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>      &lt;base64-encoded certificate content&gt;</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>      -----END CERTIFICATE-----</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">    # Optional; omit to use the default destination.</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_repo_ca_cert</span><span class="kw">:</span><span class="at"> /etc/pki/ca-trust/source/anchors/satellite-ca.pem</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
+<p><code>rhc_repo_ca_cert_src</code>,
+<code>rhc_repo_ca_cert_content</code>, and enabling
+<code>rhc_repo_ca_cert_fetch_from_satellite</code> are mutually
+exclusive. The role rejects combining any of these certificate sources.
+If a source is set or fetching is enabled and
+<code>rhc_repo_ca_cert</code> is not set, the destination defaults to
+<code>/etc/pki/ca-trust/source/anchors/katello-server-ca.pem</code>.
+When the certificate file is changed by the role,
+<code>update-ca-trust</code> is run.</p>
+<p><code>rhc_repo_ca_cert_fetch_from_satellite</code> is a boolean that
+defaults to <code>false</code>. When enabled, the role uses
+<code>ansible.builtin.get_url</code> to download the certificate from
+<code>https://{{ rhc_server["hostname"] }}/unattended/public/foreman_raw_ca</code>
+on the managed node. If <code>rhc_server.port</code> is set, it is
+included after the hostname; otherwise HTTPS uses its default port, 443.
+<code>rhc_server.hostname</code> must be set when downloading the
+certificate.</p>
+<p><strong>Security warning:</strong> This download uses
+<code>validate_certs: false</code>, so the Satellite server's TLS
+certificate is not validated. This is potentially insecure and should
+only be used if the connection to Satellite is trusted.</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_repositories</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span></code></pre></div>
 <p>A list of repositories to enable or disable in the system. Each item
 is a dictionary containing two keys:</p>
 <ul>
@@ -243,30 +301,30 @@ mandatory</li>
 and it can be <code>enabled</code> or <code>disabled</code>; this key is
 optional, and <code>enabled</code> if not specified</li>
 </ul>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rhc_repositories</span><span class="kw">:</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;repository-1&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> enabled</span><span class="kw">}</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;repository-2&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> disabled</span><span class="kw">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_release</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;release&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rhc_repositories</span><span class="kw">:</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;repository-1&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> enabled</span><span class="kw">}</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;repository-2&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> disabled</span><span class="kw">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_release</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;release&quot;</span></span></code></pre></div>
 <p>A release to set for the system. Typically used for locking a RHEL
 system to a certain minor version of RHEL.</p>
 <p>Use <code>{"state":"absent"}</code> (and not <code>""</code>) to
 actually unset the release set for the system.</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">state</span><span class="kw">:</span><span class="at"> present</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">state</span><span class="kw">:</span><span class="at"> present</span></span></code></pre></div>
 <p>Whether the system is connected to Insights; valid values are
 <code>present</code> (the default, to ensure connection), and
 <code>absent</code>.</p>
-<div class="sourceCode" id="cb14"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">autoupdate</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">autoupdate</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
 <p>Whether the system automatically updates the dynamic configuration.
 It is enabled by default.</p>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ansible_host</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;example-host&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ansible_host</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;example-host&quot;</span></span></code></pre></div>
 <p>Configures the ansible host name with a custom value for the system
 record in Host Based Inventory (HBI). This host name is used in
 playbooks by remediations. It is <code>null</code> by default and will
@@ -281,9 +339,9 @@ use the system host name.</li>
 <li>any other string value: the ansible host name is changed in Host
 Based Inventory (HBI).</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">display_name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Example Host&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">display_name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Example Host&quot;</span></span></code></pre></div>
 <p>Configures the display name with a custom value for the system record
 in Host Based Inventory (HBI). This display name is only used to
 identify the host in the Inventory. It is <code>null</code> by default
@@ -298,18 +356,18 @@ Inventory (HBI).</li>
 <p>Note: If not set explicitly on registration, the display name is set
 to the hostname by default. It is not possible to automatically revert
 it to the hostname, but it can be set so manually.</p>
-<div class="sourceCode" id="cb17"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">remediation</span><span class="kw">:</span><span class="at"> present</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">remediation</span><span class="kw">:</span><span class="at"> present</span></span></code></pre></div>
 <p>Whether the system is configured to run the Insights remediation;
 valid values are <code>present</code> (the default, to ensure
 remediation), and <code>absent</code>.</p>
 <p>Please note that the Insights remediation is supported only on RHEL
 8.4 or greater, as the needed packages are available only starting from
 that version; on older versions, this parameter has no effect.</p>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">tags</span><span class="kw">:</span><span class="at"> </span><span class="kw">{}</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">tags</span><span class="kw">:</span><span class="at"> </span><span class="kw">{}</span></span></code></pre></div>
 <p>A dictionary of tags that is added to the system record in Host Based
 Inventory (HBI); typically used for the grouping and tagging of systems,
 and to search for systems in the inventory.</p>
@@ -327,25 +385,25 @@ and the type of the values can be any data type (strings, numbers,
 lists, dictionaries, etc).</p>
 <p>Example of the tags configured in the <code>insights-client</code> <a
 href="https://access.redhat.com/documentation/en-us/red_hat_insights/2023/html/client_configuration_guide_for_red_hat_insights/con-insights-client-tagging-overview_insights-cg-adding-tags">documentation</a>:</p>
-<div class="sourceCode" id="cb19"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">tags</span><span class="kw">:</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">group</span><span class="kw">:</span><span class="at"> _group-name-value_</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">location</span><span class="kw">:</span><span class="at"> _location-name-value_</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> RHEL8</span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> SAP</span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">key 4</span><span class="kw">:</span><span class="at"> value</span></span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_proxy</span><span class="kw">:</span><span class="at"> </span><span class="kw">{}</span></span></code></pre></div>
-<p>The details of the proxy server to use for connecting:</p>
 <div class="sourceCode" id="cb21"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rhc_proxy</span><span class="kw">:</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hostname</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;proxy-hostname&quot;</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">scheme</span><span class="kw">:</span><span class="at"> http</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">4321</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">username</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;proxy-hostname&quot;</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">password</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;proxy-password&quot;</span></span></code></pre></div>
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">tags</span><span class="kw">:</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">group</span><span class="kw">:</span><span class="at"> _group-name-value_</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">location</span><span class="kw">:</span><span class="at"> _location-name-value_</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> RHEL8</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> SAP</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">key 4</span><span class="kw">:</span><span class="at"> value</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_proxy</span><span class="kw">:</span><span class="at"> </span><span class="kw">{}</span></span></code></pre></div>
+<p>The details of the proxy server to use for connecting:</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rhc_proxy</span><span class="kw">:</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hostname</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;proxy-hostname&quot;</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">scheme</span><span class="kw">:</span><span class="at"> http</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">4321</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">username</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;proxy-hostname&quot;</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">password</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;proxy-password&quot;</span></span></code></pre></div>
 <ul>
 <li><code>hostname</code> is the hostname of the proxy server</li>
 <li><code>scheme</code> is the scheme to use for the proxy server,
@@ -364,8 +422,8 @@ configurations to empty (effectively disabling the proxy server).</p>
 <p><strong>NB</strong>: the variables used for the authentication on the
 proxy server are considered secrets, and thus they ought to be secured.
 We recommend the usage of Ansible Vault as source for them.</p>
-<div class="sourceCode" id="cb22"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_environments</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_environments</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span></code></pre></div>
 <p>The list of environments to which register to when connecting the
 system.</p>
 <p><em>NB</em>:</p>
@@ -380,49 +438,81 @@ Views"</li>
 <h1 id="example-playbooks">Example Playbooks</h1>
 <p>Ensure the connection to Red Hat including Insights, authenticating
 using username &amp; password:</p>
-<div class="sourceCode" id="cb23"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Register systems</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_auth</span><span class="kw">:</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">login</span><span class="kw">:</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">username</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;your-username&quot;</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="fu">        password</span><span class="kw">: </span><span class="at">!vault </span><span class="ch">|</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>          $ANSIBLE_VAULT;1.2;AES256;dev</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>          ....</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
-<p>Ensure that certain RHEL 9 repositories are enabled, and another one
-is not:</p>
-<div class="sourceCode" id="cb24"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure RHEL 9 repositories are enabled</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_repositories</span><span class="kw">:</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;rhel-9-for-x86_64-baseos-rpms&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> enabled</span><span class="kw">}</span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;rhel-9-for-x86_64-appstream-rpms&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> enabled</span><span class="kw">}</span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;codeready-builder-for-rhel-9-x86_64-rpms&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> disabled</span><span class="kw">}</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
-<p>Ensure that a RHEL 8 system is locked on RHEL 8.6:</p>
 <div class="sourceCode" id="cb25"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure systems are locked at RHEL 8.6</span></span>
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Register systems</span></span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_release</span><span class="kw">:</span><span class="at"> </span><span class="fl">8.6</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_auth</span><span class="kw">:</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">login</span><span class="kw">:</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">username</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;your-username&quot;</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="fu">        password</span><span class="kw">: </span><span class="at">!vault </span><span class="ch">|</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>          $ANSIBLE_VAULT;1.2;AES256;dev</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>          ....</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
+<p>Connect systems to a Satellite server using its CA certificate:</p>
+<p>This example assumes the inventory defines
+<code>satellite-server</code> and <code>satellite-client</code>. Set
+<code>satellite_hostname</code> to the Satellite server hostname that
+matches its TLS certificate, and provide <code>satellite_username</code>
+and <code>satellite_password</code> through Ansible Vault. Adjust the
+certificate path if needed for your installation.</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Register systems with Satellite</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> satellite-client</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">become</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">satellite_hostname</span><span class="kw">:</span><span class="at"> satellite.example.com</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">tasks</span><span class="kw">:</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Register with Satellite</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ansible.builtin.include_role</span><span class="kw">:</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">name</span><span class="kw">:</span><span class="at"> linux-system-roles.rhc</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">vars</span><span class="kw">:</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">rhc_repo_ca_cert_fetch_from_satellite</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">rhc_auth</span><span class="kw">:</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">login</span><span class="kw">:</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">username</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;{{ satellite_username }}&quot;</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">password</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;{{ satellite_password }}&quot;</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">state</span><span class="kw">:</span><span class="at"> absent</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">rhc_organization</span><span class="kw">:</span><span class="at"> your-organization</span></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">rhc_server</span><span class="kw">:</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">hostname</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;{{ satellite_hostname }}&quot;</span></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">443</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">prefix</span><span class="kw">:</span><span class="at"> /rhsm</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">insecure</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">rhc_baseurl</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;https://{{ satellite_hostname }}/pulp/content&quot;</span></span></code></pre></div>
+<p>Ensure that certain RHEL 9 repositories are enabled, and another one
+is not:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure RHEL 9 repositories are enabled</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_repositories</span><span class="kw">:</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;rhel-9-for-x86_64-baseos-rpms&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> enabled</span><span class="kw">}</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;rhel-9-for-x86_64-appstream-rpms&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> enabled</span><span class="kw">}</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;codeready-builder-for-rhel-9-x86_64-rpms&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">state</span><span class="kw">:</span><span class="at"> disabled</span><span class="kw">}</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
+<p>Ensure that a RHEL 8 system is locked on RHEL 8.6:</p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure systems are locked at RHEL 8.6</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_release</span><span class="kw">:</span><span class="at"> </span><span class="fl">8.6</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
 <p>Ensure that a system is connected to Insights, without optional
 features such as automatic updates and remediation:</p>
-<div class="sourceCode" id="cb26"><pre
-class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure systems are connected to Insights</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">autoupdate</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">remediation</span><span class="kw">:</span><span class="at"> absent</span></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure systems are connected to Insights</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_insights</span><span class="kw">:</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">autoupdate</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">remediation</span><span class="kw">:</span><span class="at"> absent</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.rhc</span></span></code></pre></div>
 <h1 id="license">License</h1>
 <p>MIT</p>
 </article>

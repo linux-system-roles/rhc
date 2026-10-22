@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Remove fake subscription-manager
+  ansible.builtin.file:
+    path: /usr/local/bin/subscription-manager
+    state: absent
+  when: __rhc_fake_subman is defined and __rhc_fake_subman is changed
+  tags: tests::cleanup

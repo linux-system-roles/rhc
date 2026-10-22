@@ -24,4 +24,11 @@
         that:
           - >-
             'rhc_repo_ca_cert_fetch_from_satellite cannot be combined with'
-            in ansible_failed_result.msg
+            in __invalid_input_failure_messages
+      vars:
+        __invalid_input_failure_messages: >-
+          {{ ([ansible_failed_result.msg | default('') | string,
+               ansible_failed_result.msg.msg | default('') | string]
+              + (ansible_failed_result.results | default([])
+                 | map(attribute='msg') | map('default', '') | list))
+             | join(' ') }}

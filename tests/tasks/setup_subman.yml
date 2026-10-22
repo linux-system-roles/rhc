@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Check whether subscription-manager is available
+  ansible.builtin.command: command -v subscription-manager
+  register: __rhc_subman_command
+  changed_when: false
+  failed_when: false
+
+- name: Provide subscription-manager for unregistered test hosts
+  ansible.builtin.copy:
+    dest: /usr/local/bin/subscription-manager
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      if [ "$1" = identity ]; then
+          echo 'This system is not yet registered.' >&2
+          exit 1
+      fi
+      echo 'Fake subscription-manager only supports identity.' >&2
+      exit 2
+  register: __rhc_fake_subman
+  when: __rhc_subman_command.rc != 0

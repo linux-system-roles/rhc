@@ -2,9 +2,19 @@
 ---
 - name: Verify invalid parameters are rejected
   hosts: all
+  vars:
+    __invalid_input_failure_messages: >-
+      {{ ([ansible_failed_result.msg | default('') | string,
+           ansible_failed_result.msg.msg | default('') | string]
+          + (ansible_failed_result.results | default([])
+             | map(attribute='msg') | map('default', '') | list))
+         | join(' ') }}
   tasks:
     - name: Run invalid input tests
       block:
+        - name: Set up subscription-manager for tests
+          ansible.builtin.include_tasks: tasks/setup_subman.yml
+
         # ====================================================
         # Section 1: Verify role works with valid parameters
         # ====================================================
@@ -48,8 +58,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_missing_repo_name_failed: true
                   when: >-
-                    'missing required arguments' in
-                    (ansible_failed_result | default({}) | to_json)
+                    'missing required arguments: name found in rhc_repositories'
+                    in __invalid_input_failure_messages
 
             - name: Assert missing repository name was rejected
               ansible.builtin.assert:
@@ -59,23 +69,50 @@
                   argument_specs should reject rhc_repositories entries
                   missing the required name field
 
-            - name: Argument specs reject non-string rhc_state
+            - name: Argument specs reject activation_keys missing keys
               block:
-                - name: Run role with non-string rhc_state
+                - name: Run role without required activation keys
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    rhc_state: reconnect
+                    rhc_auth:
+                      activation_keys: {}
+              rescue:
+                - name: Mark missing activation keys rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_missing_activation_keys_keys_failed: true
+                  when: >-
+                    'missing required arguments: keys found in rhc_auth -> activation_keys'
+                    in __invalid_input_failure_messages
+
+            - name: Assert missing activation keys were rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_missing_activation_keys_keys_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject rhc_auth.activation_keys
+                  entries missing the required keys field
+
+            - name: Argument specs reject numeric rhc_state value
+              block:
+                - name: Run role with numeric rhc_state
                   ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
                   vars:
                     rhc_state: 123
               rescue:
-                - name: Mark invalid rhc_state type rejected
+                - name: Mark numeric rhc_state value rejected
                   ansible.builtin.set_fact:
-                    __invalid_input_rhc_state_type_failed: true
+                    __invalid_input_rhc_state_numeric_failed: true
+                  when: >-
+                    'value of rhc_state must be one of: present, absent, reconnect, got: 123'
+                    in __invalid_input_failure_messages
 
-            - name: Assert invalid rhc_state type was rejected
+            - name: Assert numeric rhc_state value was rejected
               ansible.builtin.assert:
                 that:
-                  - __invalid_input_rhc_state_type_failed | default(false)
+                  - __invalid_input_rhc_state_numeric_failed | default(false)
                 fail_msg: >-
-                  argument_specs should reject rhc_state with type int
+                  argument_specs should reject rhc_state value 123
 
             - name: Argument specs reject invalid rhc_state choice
               block:
@@ -87,6 +124,9 @@
                 - name: Mark invalid rhc_state choice rejected
                   ansible.builtin.set_fact:
                     __invalid_input_rhc_state_choice_failed: true
+                  when: >-
+                    'value of rhc_state must be one of: present, absent, reconnect, got: invalid_choice'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid rhc_state choice was rejected
               ansible.builtin.assert:
@@ -108,6 +148,9 @@
                 - name: Mark invalid rhc_insights.state choice rejected
                   ansible.builtin.set_fact:
                     __invalid_input_rhc_insights_state_choice_failed: true
+                  when: >-
+                    'value of state must be one of: present, absent, got: invalid_choice found in rhc_insights'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid rhc_insights.state choice was rejected
               ansible.builtin.assert:
@@ -132,6 +175,9 @@
                 - name: Mark invalid repository state choice rejected
                   ansible.builtin.set_fact:
                     __invalid_input_repo_state_choice_failed: true
+                  when: >-
+                    'value of state must be one of: enabled, disabled, got: invalid_choice found in rhc_repositories'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid repository state choice was rejected
               ansible.builtin.assert:
@@ -153,6 +199,16 @@
                 - name: Mark invalid rhc_insights.autoupdate type rejected
                   ansible.builtin.set_fact:
                     __invalid_input_autoupdate_type_failed: true
+                  when:
+                    - >-
+                      "argument 'autoupdate' is of type" in
+                      __invalid_input_failure_messages
+                    - >-
+                      "found in 'rhc_insights'" in
+                      __invalid_input_failure_messages
+                    - >-
+                      'unable to convert to bool' in
+                      __invalid_input_failure_messages
 
             - name: Assert invalid rhc_insights.autoupdate type was rejected
               ansible.builtin.assert:
@@ -177,6 +233,9 @@
             - name: Mark rhc_release list rejected
               ansible.builtin.set_fact:
                 __invalid_input_rhc_release_list_failed: true
+              when: >-
+                'rhc_release must be null, a string, a number, or a dictionary, got list'
+                in __invalid_input_failure_messages
 
         - name: Assert rhc_release as list was rejected
           ansible.builtin.assert:
@@ -197,6 +256,9 @@
             - name: Mark rhc_baseurl integer rejected
               ansible.builtin.set_fact:
                 __invalid_input_rhc_baseurl_int_failed: true
+              when: >-
+                'rhc_baseurl must be null or a string, got int'
+                in __invalid_input_failure_messages
 
         - name: Assert rhc_baseurl as integer was rejected
           ansible.builtin.assert:
@@ -218,6 +280,9 @@
             - name: Mark rhc_insights.tags string rejected
               ansible.builtin.set_fact:
                 __invalid_input_rhc_insights_tags_str_failed: true
+              when: >-
+                'rhc_insights.tags must be null or a dictionary, got'
+                in __invalid_input_failure_messages
 
         - name: Assert rhc_insights.tags as string was rejected
           ansible.builtin.assert:
@@ -241,6 +306,9 @@
             - name: Mark rhc_insights.ansible_host integer rejected
               ansible.builtin.set_fact:
                 __invalid_input_rhc_insights_ansible_host_int_failed: true
+              when: >-
+                'rhc_insights.ansible_host must be null, a string, or a dictionary, got int'
+                in __invalid_input_failure_messages
 
         - name: Assert rhc_insights.ansible_host as integer was rejected
           ansible.builtin.assert:
@@ -269,6 +337,9 @@
             - name: Mark conflicting rhc_auth methods rejected
               ansible.builtin.set_fact:
                 __invalid_input_rhc_auth_both_methods_failed: true
+              when: >-
+                'rhc_auth must specify either login or activation_keys, not both'
+                in __invalid_input_failure_messages
 
         - name: Assert conflicting rhc_auth methods were rejected
           ansible.builtin.assert:
@@ -292,6 +363,9 @@
             - name: Mark activation_keys without organization rejected
               ansible.builtin.set_fact:
                 __invalid_input_activation_keys_no_org_failed: true
+              when: >-
+                'rhc_organization is required when rhc_auth.activation_keys is set'
+                in __invalid_input_failure_messages
 
         - name: Assert activation_keys without organization was rejected
           ansible.builtin.assert:
@@ -303,8 +377,10 @@
 
         - name: Assert rejects empty activation_keys without rhc_organization
           block:
-            - name: Run role with empty activation_keys and reconnect
-              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+            - name: Validate empty activation_keys without organization
+              ansible.builtin.include_role:
+                name: linux-system-roles.rhc
+                tasks_from: assert_role_vars.yml
               vars:
                 rhc_state: reconnect
                 rhc_auth:
@@ -313,6 +389,9 @@
             - name: Mark empty activation_keys without organization rejected
               ansible.builtin.set_fact:
                 __invalid_input_activation_keys_empty_no_org_failed: true
+              when: >-
+                'rhc_organization is required when rhc_auth.activation_keys is set'
+                in __invalid_input_failure_messages
 
         - name: Assert empty activation_keys without organization was rejected
           ansible.builtin.assert:
@@ -337,6 +416,12 @@
             - name: Mark rhc_proxy absent with extra fields rejected
               ansible.builtin.set_fact:
                 __invalid_input_rhc_proxy_absent_extra_failed: true
+              when:
+                - >-
+                  'rhc_proxy must contain only state when state is absent'
+                  in __invalid_input_failure_messages
+                - >-
+                  'hostname' in __invalid_input_failure_messages
 
         - name: Assert rhc_proxy absent with extra fields was rejected
           ansible.builtin.assert:
@@ -361,6 +446,9 @@
             - name: Mark conflicting repo CA cert sources rejected
               ansible.builtin.set_fact:
                 __invalid_input_repo_ca_cert_both_failed: true
+              when: >-
+                'rhc_repo_ca_cert_src and rhc_repo_ca_cert_content cannot both be specified'
+                in __invalid_input_failure_messages
 
         - name: Assert conflicting repo CA cert sources were rejected
           ansible.builtin.assert:
@@ -381,6 +469,9 @@
             - name: Mark rhc_repo_ca_cert integer rejected
               ansible.builtin.set_fact:
                 __invalid_input_rhc_repo_ca_cert_int_failed: true
+              when: >-
+                'rhc_repo_ca_cert must be null or a string, got int'
+                in __invalid_input_failure_messages
 
         - name: Assert rhc_repo_ca_cert as integer was rejected
           ansible.builtin.assert:
@@ -410,6 +501,9 @@
             - name: Mark fetching without a Satellite hostname rejected
               ansible.builtin.set_fact:
                 __invalid_input_repo_ca_cert_fetch_no_hostname_failed: true
+              when: >-
+                'rhc_server.hostname is required when rhc_repo_ca_cert_fetch_from_satellite is true'
+                in __invalid_input_failure_messages
 
         - name: Assert fetching without a Satellite hostname was rejected
           ansible.builtin.assert:
@@ -420,10 +514,15 @@
               CA certificate without a Satellite hostname
 
       always:
+        - name: Clean up fake subscription-manager
+          ansible.builtin.include_tasks: tasks/cleanup_subman.yml
+          tags: tests::cleanup
+
         - name: Clear test facts
           ansible.builtin.set_fact:
             __invalid_input_missing_repo_name_failed:
-            __invalid_input_rhc_state_type_failed:
+            __invalid_input_missing_activation_keys_keys_failed:
+            __invalid_input_rhc_state_numeric_failed:
             __invalid_input_rhc_state_choice_failed:
             __invalid_input_rhc_insights_state_choice_failed:
             __invalid_input_repo_state_choice_failed:

@@ -109,6 +109,9 @@ rhc_server:
 * `insecure` specifies whether to disable the validation of the SSL certificate
   of the server
 
+To register to Red Hat, leave `rhc_server` unset (default `{}`). Set it only
+to connect to Red Hat Satellite or another registration server.
+
 ```yaml
     rhc_baseurl: ""
 ```
@@ -337,8 +340,9 @@ The list of environments to which register to when connecting the system.
 
 ## Example Playbooks
 
-Ensure the connection to Red Hat including Insights, authenticating using
-username & password:
+Register systems to Red Hat, including Insights, authenticating using username
+and password (`rhc_server` is not set, so the default Red Hat server
+is used):
 
 ```yaml
 - name: Register systems

@@ -229,6 +229,9 @@ the API calls to the server</li>
 <li><code>insecure</code> specifies whether to disable the validation of
 the SSL certificate of the server</li>
 </ul>
+<p>To register to Red Hat, leave <code>rhc_server</code> unset (default
+<code>{}</code>). Set it only to connect to Red Hat Satellite or another
+registration server.</p>
 <div class="sourceCode" id="cb9"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rhc_baseurl</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;&quot;</span></span></code></pre></div>
 <p>The base URL for receiving content from the subscription server.</p>
@@ -436,8 +439,9 @@ server; in Red Hat Satellite or Katello, this feature is called "Content
 Views"</li>
 </ul>
 <h1 id="example-playbooks">Example Playbooks</h1>
-<p>Ensure the connection to Red Hat including Insights, authenticating
-using username &amp; password:</p>
+<p>Register systems to Red Hat, including Insights, authenticating using
+username and password (<code>rhc_server</code> is not set, so the
+default Red Hat server is used):</p>
 <div class="sourceCode" id="cb25"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Register systems</span></span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> all</span></span>
